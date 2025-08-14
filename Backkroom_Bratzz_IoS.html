@@ -1,0 +1,408 @@
+# Create a GitHub Pages–ready HTML with iOS fullscreen/PWA tweaks for Backroom Bratzz.
+html = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Backroom Bratzz</title>
+
+<!-- iOS / PWA friendly meta -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#0a0c10">
+
+<!-- Minimal favicon (SVG data URI) -->
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="%230a0c10"/><text x="50%" y="52%" font-size="28" fill="%2369b0ff" text-anchor="middle" font-family="Arial,Helvetica,sans-serif">BB</text></svg>'/>
+
+<style>
+  :root {
+    --bg:#0a0c10; --panel:#0e1320; --panel-2:#12182a;
+    --ink:#f5f7ff; --muted:#c8cff0; --line:#3b4a78;
+    --accent:#69b0ff; --good:#6be27a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+  body{touch-action:manipulation; -webkit-tap-highlight-color:transparent}
+  .wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px}
+  header{width:100%;max-width:960px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  h1{font-size:clamp(20px,4vw,28px);margin:6px 0;letter-spacing:.4px;text-shadow:0 1px 0 #000, 0 0 8px rgba(105,176,255,.25)}
+  .btn{background:linear-gradient(180deg,var(--panel),#0b1020);color:var(--ink);
+       border:1px solid var(--line);padding:.6rem .9rem;border-radius:12px;cursor:pointer;
+       user-select:none;transition:.15s transform,.15s background,.15s box-shadow;display:inline-flex;align-items:center;gap:.5rem;
+       box-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 6px 18px rgba(0,0,0,.3)}
+  .btn:hover{background:linear-gradient(180deg,var(--panel-2),#0b1326)}
+  .btn:active{transform:translateY(1px)}
+  .accent{border-color:var(--accent); box-shadow:0 0 0 1px rgba(105,176,255,.35), 0 8px 22px rgba(105,176,255,.08)}
+  .good{border-color:var(--good)}
+  .disabled{opacity:.6;pointer-events:none}
+  #game{width:100%;max-width:960px;aspect-ratio:16/9;background:#0b1222;border:1px solid var(--line);border-radius:16px;position:relative;overflow:hidden}
+  canvas{width:100%;height:100%;display:block}
+  .hud{position:absolute;inset:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);pointer-events:none}
+  .hud .top{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:10px;
+            font-weight:700;font-size:clamp(12px,2.2vw,16px)}
+  .pill{background:linear-gradient(180deg,rgba(18,24,40,.92),rgba(12,16,28,.92));border:1px solid var(--line);
+        padding:.4rem .65rem;border-radius:999px;backdrop-filter:blur(6px);color:var(--ink);text-shadow:0 1px 0 #000}
+  .centerMsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px}
+  .card{pointer-events:auto;background:linear-gradient(180deg,var(--panel-2),#0a1122);
+        border:1px solid var(--line);border-radius:18px;padding:20px;max-width:min(560px,92%);
+        box-shadow:0 14px 40px rgba(0,0,0,.45), 0 0 0 1px rgba(105,176,255,.12)}
+  .card h2,.card h3{margin:0 0 8px;text-shadow:0 1px 0 #000}
+  .choose{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  .charBtn{border:1px solid var(--line);border-radius:14px;padding:10px;background:#0f1730;cursor:pointer;
+           transition:.2s transform,.2s box-shadow,.2s border-color;color:var(--ink)}
+  .charBtn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.35);border-color:var(--accent)}
+  .mini{width:100%;aspect-ratio:4/3;background:#0c1120;border:1px dashed var(--line);border-radius:10px;margin-bottom:8px;position:relative;overflow:hidden}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .kbd{padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:#0e1322;font-family:ui-monospace,Menlo,Consolas,monospace}
+  footer{opacity:.85;font-size:13px;color:var(--muted);text-shadow:0 1px 0 #000}
+  .iosTip{position:absolute;inset:auto 10px 10px 10px;pointer-events:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🟦 Backroom Bratzz</h1>
+    <div class="row">
+      <button id="btnStart" class="btn accent">Start</button>
+      <button id="btnPause" class="btn">Pause</button>
+      <button id="btnRestart" class="btn">Restart</button>
+      <button id="btnFS" class="btn good" title="Fullscreen (F)">Fullscreen</button>
+    </div>
+  </header>
+
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div class="hud">
+      <div class="top">
+        <div class="pill">Score: <span id="score">0</span></div>
+        <div class="pill">Time: <span id="time">60.0</span>s</div>
+        <div class="pill">Streak: <span id="streak">0</span></div>
+      </div>
+      <div class="centerMsg" id="overlay"></div>
+      <div id="iosTip" class="iosTip"></div>
+    </div>
+  </div>
+
+  <footer>
+    Tap / click anywhere to shoot a blue rubber band. Choose Alex (straight hair) or Riley-L (curly hair).
+    Hotkeys: <span class="kbd">F</span> Fullscreen, <span class="kbd">Space</span> Shoot, <span class="kbd">P</span> Pause, <span class="kbd">R</span> Restart.
+  </footer>
+</div>
+
+<script>
+/* Backroom Bratzz — GitHub Pages + iOS-friendly build */
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const container = document.getElementById('game');
+  const overlay = document.getElementById('overlay');
+  const iosTip = document.getElementById('iosTip');
+  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  function resize(){
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height= Math.round(rect.height* dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  new ResizeObserver(resize).observe(canvas); resize();
+
+  const ui = {
+    score: document.getElementById('score'),
+    time: document.getElementById('time'),
+    streak: document.getElementById('streak'),
+    btnStart: document.getElementById('btnStart'),
+    btnPause: document.getElementById('btnPause'),
+    btnRestart: document.getElementById('btnRestart'),
+    btnFS: document.getElementById('btnFS'),
+  };
+
+  // iOS detection + tip
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isIOS && !isStandalone) {
+    iosTip.innerHTML = '<div class="card" style="padding:12px"><strong>iPhone tip:</strong> For true fullscreen, tap <span class="kbd">Share</span> → <span class="kbd">Add to Home Screen</span>. Then launch from the icon.</div>';
+  }
+
+  // Game state
+  const W = 960, H = 540;
+  const state = { running:false, paused:false, over:false,
+    timeLeft:60, score:0, streak:0, bestStreak:0,
+    player:null, shots:[], targets:[], particles:[],
+    lastSpawn:0, spawnEvery:[650,1200], lastTime:0 };
+
+  // Utils
+  const rand=(a,b)=>a+Math.random()*(b-a);
+  const randi=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+  // Input
+  let pointer={x:W/2,y:H/2,down:false};
+  canvas.addEventListener('pointermove',e=>{
+    const r=canvas.getBoundingClientRect();
+    pointer.x=clamp((e.clientX-r.left)/r.width*W,0,W);
+    pointer.y=clamp((e.clientY-r.top)/r.height*H,0,H);
+  }, {passive:true});
+  canvas.addEventListener('pointerdown',()=>{pointer.down=true;shoot();setTimeout(()=>pointer.down=false,0);}, {passive:true});
+  window.addEventListener('keydown',e=>{
+    if(e.code==='Space'){e.preventDefault();shoot();}
+    else if(e.key==='p'||e.key==='P'){togglePause();}
+    else if(e.key==='r'||e.key==='R'){restart();}
+    else if(e.key==='f'||e.key==='F'){toggleFullscreen();}
+  });
+
+  // Simple sound
+  const audioCtx = (window.AudioContext? new AudioContext(): null);
+  function unlockAudio(){ if(audioCtx && audioCtx.state==='suspended'){ audioCtx.resume(); } }
+  ['pointerdown','touchstart','click'].forEach(ev => window.addEventListener(ev, unlockAudio, {once:true, passive:true}));
+  function beep(type='hit'){
+    if(!audioCtx) return;
+    const o=new OscillatorNode(audioCtx,{type:'square'});
+    const g=new GainNode(audioCtx);
+    o.connect(g).connect(audioCtx.destination);
+    const now=audioCtx.currentTime;
+    o.frequency.setValueAtTime(type==='hit'?740:type==='miss'?240:520, now);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.25, now+0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, now+0.12);
+    o.start(now); o.stop(now+0.13);
+  }
+
+  // Fullscreen helpers
+  async function toggleFullscreen(){
+    try{
+      if(!document.fullscreenElement){
+        await container.requestFullscreen({navigationUI:'hide'});
+      } else {
+        await document.exitFullscreen();
+      }
+    }catch(_){/* ignore */}
+  }
+  document.addEventListener('fullscreenchange', resize);
+
+  // Entities
+  function spawnTarget(){
+    const cols=5, lane=randi(0,cols-1), laneW=W/(cols+1);
+    const x=(lane+1)*laneW, baseY=H*0.55, popH=rand(34,58);
+    state.targets.push({x, y:baseY-popH, w:54, h:58, life:rand(650,1200), t0:performance.now(), hit:false});
+  }
+  function shoot(){
+    if(!state.running||state.paused||state.over||!state.player) return;
+    const px=W/2, py=H*0.86;
+    const dx=pointer.x-px, dy=pointer.y-py, angle=Math.atan2(dy,dx), speed=950;
+    state.shots.push({x:px,y:py,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:5,alive:true,age:0});
+    shake.start(4,60);
+  }
+
+  // Shake
+  const shake={mag:0,dur:0,t:0,start(m,d){this.mag=m;this.dur=d;this.t=0;},offset(){if(this.t>=this.dur)return{x:0,y:0};this.t+=dtms;const k=1-(this.t/this.dur);return{x:(Math.random()*2-1)*this.mag*k,y:(Math.random()*2-1)*this.mag*k};}};
+
+  // Particles
+  function burst(x,y,color){ for(let i=0;i<10;i++) state.particles.push({x,y,vx:(Math.random()*2-1)*220,vy:(Math.random()*2-1)*220,life:280,age:0,color}); }
+
+  // Draw
+  function drawBackground(){
+    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#141c32'); g.addColorStop(1,'#0b1326');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const cols=5, laneW=W/(cols+1), baseY=H*0.63;
+    for(let c=0;c<cols;c++){
+      const x=(c+1)*laneW;
+      for(let r=0;r<3;r++){
+        const bw=120,bh=68, bx=x-bw/2+(r===0?0:(r===1?8:-6)), by=baseY-r*(bh-8);
+        ctx.fillStyle='#7a6a43'; ctx.fillRect(bx,by,bw,bh);
+        ctx.strokeStyle='#3e351f'; ctx.lineWidth=2; ctx.strokeRect(bx+.5,by+.5,bw-1,bh-1);
+        ctx.fillStyle='#d7c487'; ctx.fillRect(bx+bw/2-6,by+2,12,bh-4);
+      }
+    }
+    for(let i=0;i<4;i++){ const cx=(i+1)*W/5; ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fillRect(cx-120,28,240,14); }
+  }
+  function drawPlayer(){
+    if(!state.player) return;
+    const px=W/2, py=H*0.86;
+    ctx.fillStyle='#2b3a60'; ctx.beginPath(); ctx.ellipse(px,py,38,46,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#f2d4c7'; ctx.beginPath(); ctx.arc(px,py-58,22,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#3b2a1f';
+    if(state.player.name==='Alex'){
+      ctx.beginPath(); ctx.roundRect(px-26,py-78,52,46,10); ctx.fill(); ctx.fillRect(px-4,py-78,8,58);
+    } else {
+      for(let i=0;i<8;i++){ ctx.beginPath(); ctx.arc(px-22+i*6,py-72+(i%2?0:2),10,0,Math.PI*2); ctx.fill(); }
+    }
+    ctx.fillStyle='#69b0ff'; ctx.fillRect(px-12,py-14,24,10);
+    ctx.strokeStyle='rgba(105,176,255,.45)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(px,py-8); ctx.lineTo(pointer.x,pointer.y); ctx.stroke();
+  }
+  function drawTarget(t){
+    const x=t.x,y=t.y;
+    ctx.fillStyle='#7a6a43'; ctx.fillRect(x-60,y+28,120,16);
+    ctx.fillStyle='#f2d4c7'; ctx.beginPath(); ctx.arc(x,y,22,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(x-6,y-10,10,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#161616'; ctx.beginPath(); ctx.arc(x-7,y-2,3,0,Math.PI*2); ctx.arc(x+7,y-2,3,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#a9b0b8'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x-6,y+12); ctx.lineTo(x,y+18); ctx.lineTo(x+6,y+12); ctx.stroke();
+    ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-12,y-9); ctx.lineTo(x-2,y-11); ctx.moveTo(x+12,y-9); ctx.lineTo(x+2,y-11); ctx.stroke();
+  }
+  function drawShot(s){
+    ctx.strokeStyle='#69b0ff'; ctx.lineWidth=3; ctx.beginPath(); ctx.ellipse(s.x,s.y,8,4,0,0,Math.PI*2); ctx.stroke();
+  }
+  function drawParticles(p){ ctx.fillStyle=p.color||'#69b0ff'; ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2); ctx.fill(); }
+
+  function hitTest(s,t){ const r=8, dx=s.x-t.x, dy=s.y-t.y; return (dx*dx+dy*dy) <= (r+22)*(r+22); }
+
+  function showTitle(){
+    overlay.innerHTML = `
+      <div class="card">
+        <h2>Backroom Bratzz</h2>
+        <div style="opacity:.95;margin-bottom:8px">Choose your Brat and pop the Bald Guy with blue rubber bands.<br/>1 point per hit. Misses reset streak.</div>
+        <div class="choose">
+          <button class="charBtn" data-char="Alex">
+            <div class="mini" data-mini="Alex"></div>
+            <strong>Alex</strong><div style="color:var(--muted)">Long straight brown hair</div>
+          </button>
+          <button class="charBtn" data-char="Riley-L">
+            <div class="mini" data-mini="Riley-L"></div>
+            <strong>Riley-L</strong><div style="color:var(--muted)">Long curly brown hair</div>
+          </button>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+          <span class="pill"><span class="kbd">Click/Tap</span> shoot</span>
+          <span class="pill"><span class="kbd">Space</span> shoot</span>
+          <span class="pill"><span class="kbd">P</span> pause</span>
+          <span class="pill"><span class="kbd">R</span> restart</span>
+          <span class="pill"><span class="kbd">F</span> fullscreen</span>
+        </div>
+      </div>`;
+    requestAnimationFrame(()=>{
+      document.querySelectorAll('[data-mini]').forEach(el=>{
+        const rect=el.getBoundingClientRect();
+        const off=document.createElement('canvas'); off.width=rect.width; off.height=rect.height;
+        const cx=off.getContext('2d');
+        cx.fillStyle='#0f1832'; cx.fillRect(0,0,off.width,off.height);
+        cx.fillStyle='#7a6a43'; cx.fillRect(12,off.height-50,off.width-24,36);
+        const px=off.width/2, py=off.height*.72;
+        cx.fillStyle='#f2d4c7'; cx.beginPath(); cx.arc(px,py-22,12,0,Math.PI*2); cx.fill();
+        cx.fillStyle='#3b2a1f';
+        if(el.dataset.mini==='Alex'){ cx.fillRect(px-14,py-34,28,18); }
+        else { for(let i=0;i<6;i++){ cx.beginPath(); cx.arc(px-12+i*5,py-30+(i%2?0:1),6,0,Math.PI*2); cx.fill(); } }
+        el.appendChild(off);
+      });
+      overlay.querySelectorAll('.charBtn').forEach(btn=>btn.addEventListener('click',()=>choosePlayer(btn.dataset.char)));
+    });
+  }
+  function choosePlayer(name){
+    state.player={name};
+    overlay.innerHTML = `
+      <div class="card" style="text-align:center">
+        <div style="font-size:18px;margin-bottom:8px">You chose <strong>${name}</strong></div>
+        <div style="opacity:.95;margin-bottom:10px">Press <span class="kbd">Start</span>, click the arena, or tap <span class="kbd">Fullscreen</span>.</div>
+        <button class="btn accent" id="go">Start Game</button>
+      </div>`;
+    overlay.querySelector('#go').addEventListener('click', start);
+  }
+  function showGameOver(){
+    overlay.innerHTML = `
+      <div class="card" style="text-align:center">
+        <h3>Time!</h3>
+        <div style="margin-bottom:8px">Score: <strong>${state.score}</strong> • Best Streak: <strong>${state.bestStreak}</strong></div>
+        <div class="row" style="justify-content:center;margin-top:6px">
+          <button class="btn accent" id="again">Play Again</button>
+          <button class="btn" id="change">Change Character</button>
+        </div>
+      </div>`;
+    overlay.querySelector('#again').addEventListener('click', restart);
+    overlay.querySelector('#change').addEventListener('click', ()=>restart(true));
+  }
+
+  ui.btnStart.addEventListener('click', start);
+  ui.btnPause.addEventListener('click', togglePause);
+  ui.btnRestart.addEventListener('click', ()=>restart());
+  ui.btnFS.addEventListener('click', toggleFullscreen);
+
+  function start(){
+    if(!state.player){ showTitle(); return; }
+    if(state.running && !state.over) return;
+    state.running=true; state.paused=false; state.over=false;
+    state.timeLeft=60; state.score=0; state.streak=0; state.bestStreak=0;
+    state.shots.length=0; state.targets.length=0; state.particles.length=0;
+    state.lastTime=performance.now(); state.lastSpawn=0; overlay.innerHTML=''; iosTip.innerHTML='';
+    setTimeout(spawnTarget,500);
+    loop(performance.now());
+  }
+  function togglePause(){
+    if(!state.running||state.over) return;
+    state.paused=!state.paused;
+    if(!state.paused){ overlay.innerHTML=''; state.lastTime=performance.now(); loop(state.lastTime); }
+    else overlay.innerHTML = `<div class="card" style="text-align:center"><strong>Paused</strong><div style="opacity:.95">Press <span class="kbd">P</span> or tap <em>Pause</em> to resume.</div></div>`;
+  }
+  function restart(changeChar=false){
+    state.running=false; state.over=false; state.paused=false;
+    state.shots.length=0; state.targets.length=0; state.particles.length=0;
+    if(changeChar){ state.player=null; showTitle(); } else { overlay.innerHTML=''; start(); }
+  }
+
+  let dt=0, dtms=0;
+  function loop(t){
+    if(!state.running||state.paused) return;
+    dtms=t-state.lastTime; state.lastTime=t; dt=dtms/1000;
+    update(dtms); render();
+    if(state.running) requestAnimationFrame(loop);
+  }
+  function update(dtms){
+    state.lastSpawn+=dtms;
+    const nextGap=(state._nextGap ?? randi(state.spawnEvery[0],state.spawnEvery[1]));
+    if(state.lastSpawn>=nextGap){ spawnTarget(); state.lastSpawn=0; state._nextGap=randi(state.spawnEvery[0],state.spawnEvery[1]); }
+
+    for(const s of state.shots){ s.x+=s.vx*dt; s.y+=s.vy*dt; s.age+=dtms;
+      if(s.x<-20||s.x>W+20||s.y<-20||s.y>H+20||s.age>1800) s.alive=false; }
+
+    for(const s of state.shots){
+      if(!s.alive) continue;
+      for(const t of state.targets){
+        if(t.hit) continue;
+        const alive=(performance.now()-t.t0) < t.life;
+        if(!alive) continue;
+        if(hitTest(s,t)){ t.hit=true; s.alive=false;
+          state.score+=1; state.streak+=1; state.bestStreak=Math.max(state.bestStreak,state.streak);
+          ui.score.textContent=state.score; ui.streak.textContent=state.streak;
+          burst(t.x,t.y,'#69b0ff'); beep('hit'); break; }
+      }
+    }
+    state.shots=state.shots.filter(s=>s.alive);
+
+    const now=performance.now();
+    for(const t of state.targets){
+      if(!t._expired && now-t.t0>=t.life){ t._expired=true; if(!t.hit){ state.streak=0; ui.streak.textContent=state.streak; beep('miss'); } }
+    }
+    state.targets=state.targets.filter(t=> now-t.t0 < (t.life+250));
+
+    for(const p of state.particles){ p.age+=dtms; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=0.96; p.vy=p.vy*0.96+380*dt; }
+    state.particles=state.particles.filter(p=>p.age<p.life);
+
+    state.timeLeft-=dt; ui.time.textContent=Math.max(0,state.timeLeft).toFixed(1);
+    if(state.timeLeft<=0 && !state.over){ state.over=true; state.running=false; showGameOver(); }
+  }
+  function render(){
+    const off=shake.offset(); ctx.save(); ctx.translate(off.x,off.y);
+    drawBackground();
+    for(const t of state.targets){ if(!t._expired) drawTarget(t); }
+    for(const s of state.shots) drawShot(s);
+    drawPlayer();
+    for(const p of state.particles) drawParticles(p);
+    ctx.restore();
+  }
+
+  // Start screen
+  showTitle();
+  document.getElementById('game').addEventListener('click', ()=>{
+    if(!state.running && !state.paused && !state.over){ if(!state.player) return; start(); }
+  }, {passive:true});
+})();
+</script>
+</body>
+</html>
+'''
+path = "/mnt/data/backroom_bratzz_ghpages.html"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(html)
+print(path)
