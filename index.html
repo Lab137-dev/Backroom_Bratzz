@@ -235,19 +235,26 @@
     o.connect(g); g.connect(audioCtx.destination);
     g.gain.value = 0.001;
     const now=audioCtx.currentTime, vol = Math.max(0.0001, settings.sfxVol);
-    if(type==='hit'){ o.type='triangle'; o.frequency.setValueAtTime(740, now);
-      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.35*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.15); }
-    else if(type==='miss'){ o.type='square'; o.frequency.setValueAtTime(240, now);
-      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.25*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.18); }
-    else if(type==='powerup'){ o.type='sine'; o.frequency.setValueAtTime(880, now); o.frequency.exponentialRampToValueAtTime(1320, now+0.1);
-      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.4*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.12); }
-    else if(type==='shoot'){ o.type='sawtooth'; o.frequency.setValueAtTime(440, now); o.frequency.exponentialRampToValueAtTime(220, now+0.05);
-      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.18*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.08); }
-    else if(type==='manager'){ o.type='square'; o.frequency.setValueAtTime(160, now); o.frequency.exponentialRampToValueAtTime(80, now+0.2);
-      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.45*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.25); }
-    else if(type==='fired'){ o.type='sawtooth'; o.frequency.setValueAtTime(200, now); o.frequency.exponentialRampToValueAtTime(50, now+0.5);
-      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.55*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.6); }
-    o.start(now); o.stop(now+0.6);
+    if(type==='hit'){
+      o.type='triangle'; o.frequency.setValueAtTime(880, now); o.frequency.exponentialRampToValueAtTime(440, now+0.1);
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.4*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.2);
+    } else if(type==='miss'){
+      o.type='square'; o.frequency.setValueAtTime(200, now); o.frequency.exponentialRampToValueAtTime(100, now+0.15);
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.3*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.25);
+    } else if(type==='powerup'){
+      o.type='sine'; o.frequency.setValueAtTime(1100, now); o.frequency.exponentialRampToValueAtTime(1650, now+0.12);
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.45*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.15);
+    } else if(type==='shoot'){
+      o.type='sawtooth'; o.frequency.setValueAtTime(660, now); o.frequency.exponentialRampToValueAtTime(330, now+0.06);
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.25*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.1);
+    } else if(type==='manager'){
+      o.type='square'; o.frequency.setValueAtTime(180, now); o.frequency.exponentialRampToValueAtTime(90, now+0.25);
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.5*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.3);
+    } else if(type='fired'){
+      o.type='sawtooth'; o.frequency.setValueAtTime(250, now); o.frequency.exponentialRampToValueAtTime(60, now+0.6);
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.6*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.7);
+    }
+    o.start(now); o.stop(now+0.7);
   }
 
   // Music
@@ -255,11 +262,13 @@
   function startMusic(){
     if(!audioCtx || !state.musicOn) return;
     stopMusic();
-    const notes=[440,494,523,587,659,698,784,880]; let i=0;
-    musicInterval=setInterval(()=>{ const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-      o.type='square'; o.frequency.value=notes[i%notes.length]; o.connect(g); g.connect(audioCtx.destination);
-      const now=audioCtx.currentTime; g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(0.10,now+0.01); g.gain.exponentialRampToValueAtTime(0.001,now+0.2);
-      o.start(now); o.stop(now+0.2); i++; if(i%8===4) i+=1; },200);
+    const notes=[440,523,587,659,784,880,784,659]; let i=0;
+    musicInterval=setInterval(()=>{ 
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type='sine'; o.frequency.value=notes[i%notes.length]; o.connect(g); g.connect(audioCtx.destination);
+      const now=audioCtx.currentTime; g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(0.15,now+0.01); g.gain.exponentialRampToValueAtTime(0.001,now+0.25);
+      o.start(now); o.stop(now+0.25); i++; if(i%8===4) i+=1; 
+    },180);
   }
   function stopMusic(){ clearInterval(musicInterval); }
   ui.btnMute.addEventListener('click', () => {
@@ -276,7 +285,6 @@
     state.targets.push({x, y:baseY, targetY:baseY-popH, w:40, h:48, life, t0:performance.now(), hit:false, type, popT:0});
   }
   function spawnPowerup(){
-    // existing stars
     const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
     const x=(lane+1)*laneW, baseY=H*0.55;
     const type=randi(0,2), color = type===2 ? '#5ca3ff' : '#ff5c5c';
@@ -285,7 +293,6 @@
   function spawnPizza(){
     const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
     const x=(lane+1)*laneW, baseY=H*0.55;
-    // pizza lives a bit longer to make collection feel fair
     state.pizzas.push({x, y:baseY-40, size:20, life:2600, t0:performance.now(), collected:false});
   }
 
@@ -298,14 +305,13 @@
     shootOnce(); state.fireTimer = now;
   }
   function currentCooldown(){
-    if(state.power.kind==='rapid') return 70; // rapid-fire
-    return 180; // base cooldown
+    if(state.power.kind==='rapid') return 70;
+    return 180;
   }
   function shootOnce(){
     playSound('shoot');
     const px=W/2, py=H*0.86, dx=pointer.x-px, dy=pointer.y-py, baseAngle=Math.atan2(dy,dx);
     const baseSpeed = 1050;
-    // spread active if Riley-L power is on
     const spreadActive = state.power.kind==='spread';
     const shots = spreadActive ? [{ang:baseAngle-0.12,r:6},{ang:baseAngle,r:6},{ang:baseAngle+0.12,r:6}]
                                : [{ang:baseAngle,r:5}];
@@ -325,7 +331,7 @@
   }
   function activateCharacterPower(){
     const kind = (state.player?.name==='Alex') ? 'rapid' : 'spread';
-    const duration = 9000; // ms
+    const duration = 9000;
     state.power.kind = kind;
     state.power.end = performance.now() + duration;
     ui.power.textContent = `${kind==='rapid'?'Rapid Fire':'Spread'} 9.0s`;
@@ -366,32 +372,63 @@
   function drawPlayer(){
     if(!state.player) return;
     const px=W/2, py=H*0.86;
-    const body=ctx.createLinearGradient(px-40,py-50,px+40,py+50);
-    body.addColorStop(0,state.player.name==='Alex'?'#ff8c66':'#b266ff'); body.addColorStop(1,state.player.name==='Alex'?'#e67654':'#9b4fe6');
-    ctx.fillStyle=body; ctx.beginPath(); ctx.ellipse(px,py,40,48,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='rgba(0,0,0,.3)'; ctx.lineWidth=2; ctx.stroke();
-    ctx.fillStyle='#f2d4c7'; ctx.beginPath(); ctx.arc(px,py-60,24,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.stroke();
-    if(state.player.name==='Alex'){ const hg=ctx.createLinearGradient(px-30,py-90,px+30,py-40); hg.addColorStop(0,'#4a2c1a'); hg.addColorStop(1,'#2f1b10');
-      ctx.fillStyle=hg; ctx.beginPath(); ctx.moveTo(px-28,py-80); ctx.quadraticCurveTo(px,py-90,px+28,py-80); ctx.lineTo(px+30,py-40); ctx.quadraticCurveTo(px,py-50,px-30,py-40); ctx.closePath(); ctx.fill();
-      ctx.fillRect(px-6,py-80,12,60); ctx.fillStyle='#4a2c1a'; ctx.beginPath(); ctx.ellipse(px,py-30,8,20,Math.PI/4,0,Math.PI*2); ctx.fill();
-    } else { const hg=ctx.createLinearGradient(px-30,py-90,px+30,py-40); hg.addColorStop(0,'#3b1e4a'); hg.addColorStop(1,'#2a1436');
-      ctx.fillStyle=hg; for(let i=0;i<10;i++){ const off=i%2?4:-4; ctx.beginPath(); ctx.arc(px-28+i*6.5,py-76+off,12,0,Math.PI*2); ctx.fill(); }
+    if(state.player.name==='Alex'){
+      // Black t-shirt
+      const shirt=ctx.createLinearGradient(px-40,py-40,px-40,py+20);
+      shirt.addColorStop(0,'#1c1c1c'); shirt.addColorStop(1,'#333333');
+      ctx.fillStyle=shirt; ctx.beginPath();
+      ctx.moveTo(px-40,py-40); ctx.lineTo(px+40,py-40); ctx.quadraticCurveTo(px+30,py+20,px,py+20);
+      ctx.quadraticCurveTo(px-30,py+20,px-40,py-40); ctx.fill();
+      // Jeans
+      const jeans=ctx.createLinearGradient(px-30,py+20,px-30,py+60);
+      jeans.addColorStop(0,'#2a3a5a'); jeans.addColorStop(1,'#1e2a3f');
+      ctx.fillStyle=jeans; ctx.beginPath();
+      ctx.rect(px-30,py+20,60,40); ctx.fill();
+      // Long straight hair
+      const hair=ctx.createLinearGradient(px-30,py-80,px+30,py+50);
+      hair.addColorStop(0,'#3c2f2f'); hair.addColorStop(1,'#1f1515');
+      ctx.fillStyle=hair; ctx.beginPath();
+      ctx.moveTo(px-30,py-80); ctx.lineTo(px+30,py-80); ctx.lineTo(px+30,py+50); ctx.lineTo(px-30,py+50); ctx.closePath(); ctx.fill();
+    } else {
+      // Maroon sweater
+      const sweater=ctx.createLinearGradient(px-40,py-40,px-40,py+20);
+      sweater.addColorStop(0,'#800000'); sweater.addColorStop(1,'#4c0000');
+      ctx.fillStyle=sweater; ctx.beginPath();
+      ctx.moveTo(px-40,py-40); ctx.lineTo(px+40,py-40); ctx.quadraticCurveTo(px+30,py+20,px,py+20);
+      ctx.quadraticCurveTo(px-30,py+20,px-40,py-40); ctx.fill();
+      // Black pants
+      const pants=ctx.createLinearGradient(px-30,py+20,px-30,py+60);
+      pants.addColorStop(0,'#1c1c1c'); pants.addColorStop(1,'#333333');
+      ctx.fillStyle=pants; ctx.beginPath();
+      ctx.rect(px-30,py+20,60,40); ctx.fill();
+      // Long curly hair
+      const hair=ctx.createLinearGradient(px-40,py-80,px+40,py-20);
+      hair.addColorStop(0,'#3b1e4a'); hair.addColorStop(1,'#2a1436');
+      ctx.fillStyle=hair;
+      for(let i=0;i<12;i++){
+        const off=i%2?6:-6;
+        ctx.beginPath(); ctx.arc(px-36+i*6,py-50+off,14,0,Math.PI*2); ctx.fill();
+      }
+      // Hair accessory
       ctx.fillStyle='#ffca38'; ctx.beginPath(); ctx.arc(px+20,py-70,6,0,Math.PI*2); ctx.fill();
     }
-    ctx.fillStyle='#2a2a2a'; ctx.beginPath(); ctx.arc(px-8,py-64,3,0,Math.PI*2); ctx.arc(px+8,py-64,3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.8)'; ctx.beginPath(); ctx.arc(px-8,py-65,1.5,0,Math.PI*2); ctx.arc(px+8,py-65,1.5,0,Math.PI*2); ctx.fill();
+    // Rubber band launcher
     ctx.fillStyle=state.player.name==='Alex'?'#5ca3ff':'#b266ff'; ctx.fillRect(px-14,py-16,28,12);
     ctx.fillStyle='rgba(255,255,255,.2)'; ctx.fillRect(px-14,py-16,28,3);
-    ctx.strokeStyle='rgba(92,163,255,.5)'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(px,py-10); ctx.lineTo(pointer.x,pointer.y); ctx.stroke();
+    ctx.strokeStyle='rgba(92,163,255,.5)'; ctx.lineWidth=2.5; ctx.beginPath();
+    ctx.moveTo(px,py-10); ctx.lineTo(pointer.x,pointer.y); ctx.stroke();
   }
   function drawTarget(t){
     const prog=Math.min(1,t.popT/200); t.y=lerp(t.y,t.targetY,prog);
     const x=t.x,y=t.y; fillRectGrad(x-40,y+24,80,12,'#6a5a38','#4c3e27');
     ctx.fillStyle='#f2d4c7'; ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.lineWidth=1; ctx.stroke();
-    if(t.type==='bald'){ ctx.fillStyle='rgba(255,255,255,.2)'; ctx.beginPath(); ctx.arc(x-5,y-10,9,0,Math.PI*2); ctx.fill();
+    if(t.type==='bald'){
+      ctx.fillStyle='rgba(255,255,255,.2)'; ctx.beginPath(); ctx.arc(x-5,y-10,9,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(x-7,y-3,3,0,Math.PI*2); ctx.arc(x+7,y-3,3,0,Math.PI*2); ctx.fill();
       ctx.strokeStyle='#b0b8c0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x-6,y+10); ctx.lineTo(x,y+16); ctx.lineTo(x+6,y+10); ctx.stroke();
       ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-10,y-9); ctx.lineTo(x-3,y-11); ctx.moveTo(x+10,y-9); ctx.lineTo(x+3,y-11); ctx.stroke();
-    } else { const hg=ctx.createLinearGradient(x-25,y-30,x+25,y-10); hg.addColorStop(0,'#a0a0a0'); hg.addColorStop(1,'#808080');
+    } else {
+      const hg=ctx.createLinearGradient(x-25,y-30,x+25,y-10); hg.addColorStop(0,'#a0a0a0'); hg.addColorStop(1,'#808080');
       ctx.fillStyle=hg; ctx.beginPath(); ctx.moveTo(x-22,y-25); ctx.quadraticCurveTo(x,y-35,x+22,y-25); ctx.lineTo(x+22,y-5); ctx.quadraticCurveTo(x,y-15,x-22,y-5); ctx.closePath(); ctx.fill();
       ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x-8,y-3,5,0,Math.PI*2); ctx.arc(x+8,y-3,5,0,Math.PI*2); ctx.moveTo(x-13,y-3); ctx.lineTo(x-3,y-3); ctx.moveTo(x+3,y-3); ctx.lineTo(x+13,y-3); ctx.stroke();
       ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(x-8,y-3,2,0,Math.PI*2); ctx.arc(x+8,y-3,2,0,Math.PI*2); ctx.fill();
@@ -415,18 +452,18 @@
   function drawPizza(p){
     const x=p.x,y=p.y,s=p.size;
     ctx.save(); ctx.translate(x,y); ctx.rotate((performance.now()-p.t0)/800);
-    // crust
     ctx.fillStyle='#c68642'; ctx.beginPath(); ctx.arc(0,0,s,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#f6d56b'; ctx.beginPath(); ctx.arc(0,0,s*0.82,0,Math.PI*2); ctx.fill(); // cheese
-    // pepperoni
+    ctx.fillStyle='#f6d56b'; ctx.beginPath(); ctx.arc(0,0,s*0.82,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#b54a3a';
     for(let i=0;i<6;i++){ const a=i*Math.PI/3; ctx.beginPath(); ctx.arc(Math.cos(a)*s*0.45,Math.sin(a)*s*0.45,s*0.18,0,Math.PI*2); ctx.fill(); }
-    // slice cut lines
     ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2;
     for(let i=0;i<6;i++){ const a=i*Math.PI/3; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(a)*s,Math.sin(a)*s); ctx.stroke(); }
     ctx.restore();
   }
-  function drawParticles(p){ const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size); g.addColorStop(0,p.color); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); }
+  function drawParticles(p){ 
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size); g.addColorStop(0,p.color); g.addColorStop(1,'rgba(0,0,0,0)'); 
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); 
+  }
 
   // Collision
   function hitTest(s,t){ const r=s.r, dx=s.x-t.x, dy=s.y-t.y; return (dx*dx+dy*dy) <= (r+20)*(r+20); }
@@ -463,10 +500,46 @@
         cx.fillStyle='#0f1832'; cx.fillRect(0,0,off.width,off.height);
         cx.fillStyle='#8a7848'; cx.fillRect(12,off.height-50,off.width-24,36);
         const px=off.width/2, py=off.height*.72;
-        cx.fillStyle='#f2d4c7'; cx.beginPath(); cx.arc(px,py-22,12,0,Math.PI*2); cx.fill();
-        const hair=(a,b,fn)=>{const g=cx.createLinearGradient(px-15,py-40,px+15,py-20); g.addColorStop(0,a); g.addColorStop(1,b); cx.fillStyle=g; fn();};
-        if(el.dataset.mini==='Alex'){ hair('#4a2c1a','#2f1b10',()=>{ cx.beginPath(); cx.moveTo(px-14,py-36); cx.quadraticCurveTo(px,py-42,px+14,py-36); cx.lineTo(px+16,py-20); cx.quadraticCurveTo(px,py-26,px-16,py-20); cx.closePath(); cx.fill(); }); }
-        else { hair('#3b1e4a','#2a1436',()=>{ for(let i=0;i<6;i++){ const offy=i%2?2:-2; cx.beginPath(); cx.arc(px-12+i*4,py-34+offy,6,0,Math.PI*2); cx.fill(); } }); cx.fillStyle='#ffca38'; cx.beginPath(); cx.arc(px+10,py-30,3,0,Math.PI*2); cx.fill(); }
+        if(el.dataset.mini==='Alex'){
+          // Black t-shirt
+          const shirt=cx.createLinearGradient(px-20,py-20,px-20,py+10);
+          shirt.addColorStop(0,'#1c1c1c'); shirt.addColorStop(1,'#333333');
+          cx.fillStyle=shirt; cx.beginPath();
+          cx.moveTo(px-20,py-20); cx.lineTo(px+20,py-20); cx.quadraticCurveTo(px+15,py+10,px,py+10);
+          cx.quadraticCurveTo(px-15,py+10,px-20,py-20); cx.fill();
+          // Jeans
+          const jeans=cx.createLinearGradient(px-15,py+10,px-15,py+30);
+          jeans.addColorStop(0,'#2a3a5a'); jeans.addColorStop(1,'#1e2a3f');
+          cx.fillStyle=jeans; cx.beginPath();
+          cx.rect(px-15,py+10,30,20); cx.fill();
+          // Long straight hair
+          const hair=cx.createLinearGradient(px-15,py-40,px+15,py+25);
+          hair.addColorStop(0,'#3c2f2f'); hair.addColorStop(1,'#1f1515');
+          cx.fillStyle=hair; cx.beginPath();
+          cx.moveTo(px-15,py-40); cx.lineTo(px+15,py-40); cx.lineTo(px+15,py+25); cx.lineTo(px-15,py+25); cx.closePath(); cx.fill();
+        } else {
+          // Maroon sweater
+          const sweater=cx.createLinearGradient(px-20,py-20,px-20,py+10);
+          sweater.addColorStop(0,'#800000'); sweater.addColorStop(1,'#4c0000');
+          cx.fillStyle=sweater; cx.beginPath();
+          cx.moveTo(px-20,py-20); cx.lineTo(px+20,py-20); cx.quadraticCurveTo(px+15,py+10,px,py+10);
+          cx.quadraticCurveTo(px-15,py+10,px-20,py-20); cx.fill();
+          // Black pants
+          const pants=cx.createLinearGradient(px-15,py+10,px-15,py+30);
+          pants.addColorStop(0,'#1c1c1c'); pants.addColorStop(1,'#333333');
+          cx.fillStyle=pants; cx.beginPath();
+          cx.rect(px-15,py+10,30,20); cx.fill();
+          // Long curly hair
+          const hair=cx.createLinearGradient(px-20,py-40,px+20,py-10);
+          hair.addColorStop(0,'#3b1e4a'); hair.addColorStop(1,'#2a1436');
+          cx.fillStyle=hair;
+          for(let i=0;i<8;i++){
+            const offy=i%2?3:-3;
+            cx.beginPath(); cx.arc(px-18+i*4,py-25+offy,7,0,Math.PI*2); cx.fill();
+          }
+          // Hair accessory
+          cx.fillStyle='#ffca38'; cx.beginPath(); cx.arc(px+10,py-30,3,0,Math.PI*2); cx.fill();
+        }
         el.appendChild(off);
       });
       overlay.querySelectorAll('.charBtn').forEach(btn=>btn.addEventListener('click',()=>choosePlayer(btn.dataset.char)));
@@ -516,7 +589,7 @@
     if(!state.player){ state.player = { name:'Alex' }; }
     if(state.running && !state.over) return;
     state.running=true; state.paused=false; state.over=false;
-    state.timeLeft=60; state.score=0; state.streak=0; state.bestStreak=0; state.combo=1; state.difficulty=1;
+    state.timeLeft=60; state.score=0; state.streak=0; state.bestStreak=0; state.combo=1;
     state.reaHits=0; state.shots.length=0; state.targets.length=0; state.particles.length=0; state.powerups.length=0; state.pizzas.length=0;
     state.lastTime=performance.now(); state.lastSpawn=0; state.lastPowerup=0; state.lastManager=0; state.lastPizza=0;
     state.doubleComboEnd=0; state.fireTimer=0; state.pizzaCount=0; state.power={kind:'none',end:0};
@@ -567,7 +640,6 @@
     // Shot collisions
     for(const s of state.shots){
       if(!s.alive) continue;
-      // targets
       for(const t of state.targets){
         if(t.hit) continue;
         const alive=(performance.now()-t.t0) < t.life;
@@ -588,7 +660,6 @@
           break;
         }
       }
-      // stars
       for(const p of state.powerups){
         if(p.collected) continue;
         const alive=(performance.now()-p.t0) < p.life; if(!alive) continue;
@@ -601,7 +672,6 @@
           burst(p.x,p.y,p.color, 20, 300); playSound('powerup'); break;
         }
       }
-      // pizzas
       for(const z of state.pizzas){
         if(z.collected) continue;
         const alive=(performance.now()-z.t0) < z.life; if(!alive) continue;
