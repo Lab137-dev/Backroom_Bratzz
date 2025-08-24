@@ -27,7 +27,7 @@
   .accent{border-color:var(--accent); box-shadow:0 0 0 2px rgba(92,163,255,.4), 0 10px 24px rgba(92,163,255,.1)}
   .good{border-color:var(--good)}
   .disabled{opacity:.6;pointer-events:none}
-  #game{width:100%;max-width:960px;aspect-ratio:16/9;background:linear-gradient(180deg,#121a34,#0a1124);
+  #game{width:100%;max-width:960px;aspect-ratio:16/10;background:linear-gradient(180deg,#121a34,#0a1124);
         border:2px solid var(--line);border-radius:18px;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5)}
   canvas{width:100%;height:100%;display:block;touch-action:none}
   .hud{position:absolute;inset:0;pointer-events:none; z-index:10;}
@@ -43,9 +43,10 @@
         box-shadow:0 16px 48px rgba(0,0,0,.5), 0 0 0 2px rgba(92,163,255,.15)}
   .card h2,.card h3{margin:0 0 10px;text-shadow:0 2px 2px rgba(0,0,0,.6)}
   .choose{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-  .charBtn{border:2px solid var(--line);border-radius:16px;padding:12px;background:linear-gradient(180deg,#121a34,#0c142a);cursor:pointer;
-           transition:.2s transform,.2s box-shadow,.2s border-color;color:var(--ink);box-shadow:0 6px 20px rgba(0,0,0,.3)}
-  .charBtn:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.4);border-color:var(--accent)}
+  .charBtn{border:2px solid var(--accent);border-radius:16px;padding:12px;background:linear-gradient(135deg,#0c142a,#121a34);cursor:pointer;
+           transition:.2s transform,.2s box-shadow,.2s border-color;color:var(--ink);box-shadow:0 0 10px rgba(92,163,255,.5), inset 0 0 5px rgba(92,163,255,.3);
+           animation:shimmer 2s linear infinite alternate;}
+  .charBtn:hover{transform:translateY(-3px);box-shadow:0 0 20px rgba(92,163,255,.7), inset 0 0 10px rgba(92,163,255,.5);border-color:#7bbfff}
   .mini{width:100%;aspect-ratio:4/3;background:#0e1632;border:2px dashed var(--line);border-radius:12px;margin-bottom:10px;position:relative;overflow:hidden}
   .kbd{padding:3px 7px;border:1px solid var(--line);border-radius:8px;background:#10162a;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
   .score-pop{position:absolute;font-size:16px;font-weight:700;color:var(--combo);animation:scorePop 1s ease-out forwards;text-shadow:0 2px 4px rgba(0,0,0,.5);pointer-events:none}
@@ -62,6 +63,10 @@
   .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:linear-gradient(180deg,#141a2d,#0f1529);font-size:12px;color:var(--muted)}
   .hi-contrast :is(.pill,.btn){border-color:#fff}
   footer{opacity:.9;font-size:14px;color:var(--muted);text-shadow:0 1px 2px rgba(0,0,0,.5)}
+  @keyframes shimmer {
+    0% { box-shadow: 0 0 10px rgba(92,163,255,.5), inset 0 0 5px rgba(92,163,255,.3); }
+    100% { box-shadow: 0 0 20px rgba(92,163,255,.8), inset 0 0 10px rgba(92,163,255,.6); }
+  }
 </style>
 </head>
 <body>
@@ -95,9 +100,7 @@
   </div>
 
   <footer>
-    Tap/click (or hold) to shoot blue rubber bands. Stars = bonuses. Avoid Rea-Rea (manager)—3 hits and you’re fired.
-    Collect 🍕 pizzas (3) to trigger your character’s special: Alex = Rapid Fire, Riley-L = Spread Shot.
-    Hotkeys: <span class="kbd">F</span> Fullscreen, <span class="kbd">Space</span> Shoot, <span class="kbd">P</span> Pause, <span class="kbd">R</span> Restart, <span class="kbd">,</span> Settings.
+    Tap/click (or hold) to shoot blue rubber bands. Stars = bonuses. Avoid Rea-Rea (manager)—3 hits and you’re fired. Hit Jaxon (fast manager) 3 times for 2x points (5s). Collect 🍕 pizzas (3) to trigger your character’s special: Alex = Rapid Fire, Riley-L = Spread Shot. Hotkeys: <span class="kbd">F</span> Fullscreen, <span class="kbd">Space</span> Shoot, <span class="kbd">P</span> Pause, <span class="kbd">R</span> Restart, <span class="kbd">,</span> Settings, <span class="kbd">M</span> Music.
   </footer>
 </div>
 
@@ -132,6 +135,14 @@
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
   new ResizeObserver(resize).observe(canvas); resize();
+
+  // ==== One-time WebAudio unlock (for iOS/Safari) + shared audio context ====
+  const audioCtx = (window.AudioContext ? new AudioContext() : null);
+  ['pointerdown','touchstart','click'].forEach(ev =>
+    window.addEventListener(ev, () => {
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }, { once:true, passive:true })
+  );
 
   // Overlay helper
   const overlay = document.getElementById('overlay');
@@ -170,7 +181,7 @@
   };
 
   // Game state
-  const W = 960, H = 540;
+  const W = 960, H = 600; // Increased height from 540 to 600
   const state = {
     running:false, paused:false, over:false,
     timeLeft:60, score:0, streak:0, bestStreak:0, combo:1,
@@ -186,7 +197,9 @@
     fireCooldownMs: 180, fireTimer: 0, autoFireDown:false,
     // Pizza power
     pizzaCount:0,
-    power: {kind:'none', end:0}
+    power: {kind:'none', end:0},
+    // Jaxon
+    jaxonHits:0, jaxonDoubleEnd:0, jaxonDoubleSoundTimer:0
   };
 
   function applySettingsToUI(){
@@ -224,11 +237,11 @@
     else if(e.key==='r'||e.key==='R'){ restart(); }
     else if(e.key==='f'||e.key==='F'){ toggleFullscreen(); }
     else if(e.key===','){ settingsDlg.open ? settingsDlg.close() : settingsDlg.showModal(); }
+    else if(e.key==='m'||e.key==='M'){ ui.btnMute.click(); }
   });
   window.addEventListener('keyup',e=>{ if(e.code==='Space'){ state.autoFireDown = false; } });
 
-  // Audio
-  const audioCtx = (window.AudioContext? new AudioContext(): null);
+  // ====== SFX (uses shared audioCtx) ======
   function playSound(type='hit'){
     if(!audioCtx) return;
     const o=audioCtx.createOscillator(), g=audioCtx.createGain();
@@ -250,39 +263,141 @@
     } else if(type==='manager'){
       o.type='square'; o.frequency.setValueAtTime(180, now); o.frequency.exponentialRampToValueAtTime(90, now+0.25);
       g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.5*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.3);
-    } else if(type='fired'){
+    } else if(type==='fired'){
       o.type='sawtooth'; o.frequency.setValueAtTime(250, now); o.frequency.exponentialRampToValueAtTime(60, now+0.6);
       g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.6*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.7);
+    } else if(type==='jaxonDouble'){
+      o.type='sine'; o.frequency.setValueAtTime(1400, now); o.frequency.exponentialRampToValueAtTime(1800, now+0.1);
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.35*vol, now+0.01); g.gain.exponentialRampToValueAtTime(0.001, now+0.15);
     }
     o.start(now); o.stop(now+0.7);
   }
 
-  // Music
-  let musicInterval;
-  function startMusic(){
-    if(!audioCtx || !state.musicOn) return;
-    stopMusic();
-    const notes=[440,523,587,659,784,880,784,659]; let i=0;
-    musicInterval=setInterval(()=>{ 
-      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-      o.type='sine'; o.frequency.value=notes[i%notes.length]; o.connect(g); g.connect(audioCtx.destination);
-      const now=audioCtx.currentTime; g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(0.15,now+0.01); g.gain.exponentialRampToValueAtTime(0.001,now+0.25);
-      o.start(now); o.stop(now+0.25); i++; if(i%8===4) i+=1; 
-    },180);
+  // ====== Background Music: FM bell (Synare-style) ======
+  const music = {
+    enabled: !!settings.musicOn,
+    bpm: 112,
+    barBeats: 4,
+    timer: null,
+    master: null,
+  };
+
+  function ensureMusicNodes() {
+    if (!audioCtx) return;
+    if (!music.master) {
+      music.master = audioCtx.createGain();
+      music.master.gain.value = 0.18; // overall music level
+      music.master.connect(audioCtx.destination);
+    }
   }
-  function stopMusic(){ clearInterval(musicInterval); }
+
+  // One bell hit at given AudioContext time
+  function scheduleBellHit(when = audioCtx.currentTime) {
+    if (!audioCtx) return;
+
+    // carrier
+    const carrier = new OscillatorNode(audioCtx, { type: 'sine', frequency: 1200 });
+    const carGain = new GainNode(audioCtx, { gain: 0.0001 });
+
+    // FM modulator
+    const mod = new OscillatorNode(audioCtx, { type: 'sine', frequency: 760 });
+    const modGain = new GainNode(audioCtx, { gain: 900 });
+    mod.connect(modGain).connect(carrier.frequency);
+
+    // noise tick
+    const noise = audioCtx.createBufferSource();
+    const buf = audioCtx.createBuffer(1, 4410, audioCtx.sampleRate); // ~0.1s
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = (Math.random()*2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.03));
+    noise.buffer = buf;
+    const noiseGain = new GainNode(audioCtx, { gain: 0.15 });
+
+    // slapback echo
+    const delay = new DelayNode(audioCtx, { delayTime: 0.08 });
+    const fb = new GainNode(audioCtx, { gain: 0.25 });
+    delay.connect(fb).connect(delay);
+
+    // routing
+    carrier.connect(carGain).connect(delay).connect(music.master);
+    noise.connect(noiseGain).connect(music.master);
+
+    const a = when, atk = 0.004, dec = 0.35;
+
+    // amp env
+    carGain.gain.setValueAtTime(0.0001, a);
+    carGain.gain.exponentialRampToValueAtTime(0.70, a + atk);
+    carGain.gain.exponentialRampToValueAtTime(0.0008, a + dec);
+
+    // FM index decay: metallic -> sine
+    modGain.gain.setValueAtTime(900, a);
+    modGain.gain.exponentialRampToValueAtTime(40, a + 0.12);
+    modGain.gain.exponentialRampToValueAtTime(5,  a + 0.28);
+
+    // slight downward glide
+    carrier.frequency.setValueAtTime(1200, a);
+    carrier.frequency.exponentialRampToValueAtTime(980, a + 0.18);
+
+    // noise env
+    noiseGain.gain.setValueAtTime(0.15, a);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, a + 0.06);
+
+    mod.start(a);
+    carrier.start(a);
+    noise.start(a);
+
+    carrier.stop(a + 0.6);
+    mod.stop(a + 0.6);
+    noise.stop(a + 0.2);
+  }
+
+  function startMusic() {
+    if (!audioCtx || !music.enabled) return;
+    ensureMusicNodes();
+    const beat = 60 / music.bpm;
+    const bar  = beat * music.barBeats; // change to "beat" to ping every beat
+    function tick() {
+      if (!music.enabled) return;
+      const t0 = audioCtx.currentTime + 0.02;
+      scheduleBellHit(t0);           // hit on beat 1
+      music.timer = setTimeout(tick, bar * 1000);
+    }
+    tick();
+  }
+
+  function stopMusic() {
+    if (music.timer) { clearTimeout(music.timer); music.timer = null; }
+  }
+
+  // Mute/Unmute button toggles music.enabled + localStorage + label
   ui.btnMute.addEventListener('click', () => {
-    state.musicOn = !state.musicOn; settings.musicOn = state.musicOn; localStorage.setItem('bratzz_musicOn', state.musicOn);
-    ui.btnMute.textContent = state.musicOn ? 'Mute Music' : 'Unmute Music';
-    if (state.musicOn && state.running) startMusic(); else stopMusic();
+    music.enabled = !music.enabled;
+    settings.musicOn = music.enabled;
+    state.musicOn = music.enabled;
+    localStorage.setItem('bratzz_musicOn', music.enabled);
+    ui.btnMute.textContent = music.enabled ? 'Mute Music' : 'Unmute Music';
+    if (music.enabled) {
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      startMusic();
+    } else {
+      stopMusic();
+    }
   });
 
   // Entities
   function spawnTarget(type='bald'){
-    const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
-    const x=(lane+1)*laneW, baseY=H*0.55, popH=rand(34,58);
-    const life=rand(650,1200)/state.difficulty;
-    state.targets.push({x, y:baseY, targetY:baseY-popH, w:40, h:48, life, t0:performance.now(), hit:false, type, popT:0});
+    if (type === 'jaxon') {
+      // 15% slower and a little lower so he doesn't hide under the HUD
+      const speed = 600 * 0.85;                 // 510 px/s
+      const vx = randi(0, 1) ? speed : -speed;  // Move left or right
+      const x = vx > 0 ? -40 : W + 40;          // Start off-screen
+      const y = 95;                              // Was 60 — now clear of the top pills
+      state.targets.push({x, y, w:40, h:40, vx, life:2000, t0:performance.now(), hit:false, type, hitCount:0});
+    } else {
+      const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
+      const x=(lane+1)*laneW, baseY=H*0.55, popH=rand(34,58);
+      const life=rand(650,1200)/state.difficulty;
+      state.targets.push({x, y:baseY, targetY:baseY-popH, w:40, h:48, life, t0:performance.now(), hit:false, type, popT:0});
+    }
   }
   function spawnPowerup(){
     const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
@@ -351,6 +466,13 @@
   // Shake / particles
   const shake={mag:0,dur:0,t:0,start(m,d){this.mag=m;this.dur=d;this.t=0;},offset(){if(this.t>=this.dur)return{x:0,y:0};this.t+=dtms;const k=1-(this.t/this.dur);return{x:(Math.random()*2-1)*this.mag*k,y:(Math.random()*2-1)*this.mag*k};}};
   function burst(x,y,color,count=12,speed=250){ for(let i=0;i<count;i++){ const a=rand(0,Math.PI*2), v=rand(speed*.5,speed); state.particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rand(200,400),age:0,color,size:rand(2,5)}); } }
+  function jaxonTrail(x,y,vx){ 
+    const a = vx > 0 ? Math.PI : 0; // Particles emit opposite to Jaxon's direction
+    for(let i=0;i<2;i++){ 
+      const va = a + rand(-0.3,0.3), v=rand(50,100);
+      state.particles.push({x,y,vx:Math.cos(va)*v,vy:Math.sin(va)*v,life:rand(100,200),age:0,color:'#ffd700',size:rand(1,3)});
+    }
+  }
 
   // Drawing
   function fillRectGrad(x,y,w,h,c1,c2){ const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,c1); g.addColorStop(1,c2); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); }
@@ -419,20 +541,40 @@
     ctx.moveTo(px,py-10); ctx.lineTo(pointer.x,pointer.y); ctx.stroke();
   }
   function drawTarget(t){
-    const prog=Math.min(1,t.popT/200); t.y=lerp(t.y,t.targetY,prog);
-    const x=t.x,y=t.y; fillRectGrad(x-40,y+24,80,12,'#6a5a38','#4c3e27');
-    ctx.fillStyle='#f2d4c7'; ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.lineWidth=1; ctx.stroke();
-    if(t.type==='bald'){
-      ctx.fillStyle='rgba(255,255,255,.2)'; ctx.beginPath(); ctx.arc(x-5,y-10,9,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(x-7,y-3,3,0,Math.PI*2); ctx.arc(x+7,y-3,3,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle='#b0b8c0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x-6,y+10); ctx.lineTo(x,y+16); ctx.lineTo(x+6,y+10); ctx.stroke();
-      ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-10,y-9); ctx.lineTo(x-3,y-11); ctx.moveTo(x+10,y-9); ctx.lineTo(x+3,y-11); ctx.stroke();
+    if (t.type === 'jaxon') {
+      const x=t.x, y=t.y;
+      // Glow effect
+      const glow=ctx.createRadialGradient(x,y,0,x,y,50);
+      glow.addColorStop(0,'rgba(255,215,0,0.3)'); glow.addColorStop(1,'rgba(255,215,0,0)');
+      ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(x,y,50,0,Math.PI*2); ctx.fill();
+      // Square face
+      ctx.fillStyle='#f2d4c7'; ctx.fillRect(x-20,y-20,40,40);
+      ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.lineWidth=1; ctx.strokeRect(x-20,y-20,40,40);
+      // Brown hair
+      const hair=ctx.createLinearGradient(x-25,y-30,x+25,y-10);
+      hair.addColorStop(0,'#3c2f2f'); hair.addColorStop(1,'#1f1515');
+      ctx.fillStyle=hair; ctx.fillRect(x-25,y-30,50,20);
+      // Eyes and mouth
+      ctx.fillStyle='#1a1a1a'; ctx.beginPath();
+      ctx.arc(x-8,y-5,3,0,Math.PI*2); ctx.arc(x+8,y-5,3,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath();
+      ctx.moveTo(x-8,y+10); ctx.lineTo(x+8,y+10); ctx.stroke();
     } else {
-      const hg=ctx.createLinearGradient(x-25,y-30,x+25,y-10); hg.addColorStop(0,'#a0a0a0'); hg.addColorStop(1,'#808080');
-      ctx.fillStyle=hg; ctx.beginPath(); ctx.moveTo(x-22,y-25); ctx.quadraticCurveTo(x,y-35,x+22,y-25); ctx.lineTo(x+22,y-5); ctx.quadraticCurveTo(x,y-15,x-22,y-5); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x-8,y-3,5,0,Math.PI*2); ctx.arc(x+8,y-3,5,0,Math.PI*2); ctx.moveTo(x-13,y-3); ctx.lineTo(x-3,y-3); ctx.moveTo(x+3,y-3); ctx.lineTo(x+13,y-3); ctx.stroke();
-      ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(x-8,y-3,2,0,Math.PI*2); ctx.arc(x+8,y-3,2,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-8,y+10); ctx.lineTo(x+8,y+10); ctx.stroke();
+      const prog=Math.min(1,t.popT/200); t.y=lerp(t.y,t.targetY,prog);
+      const x=t.x,y=t.y; fillRectGrad(x-40,y+24,80,12,'#6a5a38','#4c3e27');
+      ctx.fillStyle='#f2d4c7'; ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.lineWidth=1; ctx.stroke();
+      if(t.type==='bald'){
+        ctx.fillStyle='rgba(255,255,255,.2)'; ctx.beginPath(); ctx.arc(x-5,y-10,9,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(x-7,y-3,3,0,Math.PI*2); ctx.arc(x+7,y-3,3,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle='#b0b8c0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x-6,y+10); ctx.lineTo(x,y+16); ctx.lineTo(x+6,y+10); ctx.stroke();
+        ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-10,y-9); ctx.lineTo(x-3,y-11); ctx.moveTo(x+10,y-9); ctx.lineTo(x+3,y-11); ctx.stroke();
+      } else {
+        const hg=ctx.createLinearGradient(x-25,y-30,x+25,y-10); hg.addColorStop(0,'#a0a0a0'); hg.addColorStop(1,'#808080');
+        ctx.fillStyle=hg; ctx.beginPath(); ctx.moveTo(x-22,y-25); ctx.quadraticCurveTo(x,y-35,x+22,y-25); ctx.lineTo(x+22,y-5); ctx.quadraticCurveTo(x,y-15,x-22,y-5); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x-8,y-3,5,0,Math.PI*2); ctx.arc(x+8,y-3,5,0,Math.PI*2); ctx.moveTo(x-13,y-3); ctx.lineTo(x-3,y-3); ctx.moveTo(x+3,y-3); ctx.lineTo(x+13,y-3); ctx.stroke();
+        ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(x-8,y-3,2,0,Math.PI*2); ctx.arc(x+8,y-3,2,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-8,y+10); ctx.lineTo(x+8,y+10); ctx.stroke();
+      }
     }
   }
   function drawShot(s){
@@ -476,12 +618,12 @@
         <h2>Backroom Bratzz</h2>
         <div style="opacity:.95;margin-bottom:10px">
           Choose your Brat and pop the Bald Guy with blue rubber bands.<br/>
-          Hit stars for bonuses. Avoid Rea-Rea. Collect <strong>🍕 x3</strong> to trigger your character’s special!
+          Hit stars for bonuses. Avoid Rea-Rea. Hit Jaxon 3 times for 2x points. Collect <strong>🍕 x3</strong> to trigger your character’s special!
         </div>
         <div>High Score: <strong>${state.highScore}</strong> • High Streak: <strong>${state.highStreak}</strong></div>
         <div class="choose">
-          <button class="charBtn" data-char="Alex"><div class="mini" data-mini="Alex"></div><strong>Alex</strong><div style="color:var(--muted)">🍕 Rapid Fire</div></button>
-          <button class="charBtn" data-char="Riley-L"><div class="mini" data-mini="Riley-L"></div><strong>Riley-L</strong><div style="color:var(--muted)">🍕 Spread Shot</div></button>
+          <button class="charBtn" data-char="Alex"><strong>Alex</strong><div style="color:var(--muted)">🍕 Rapid Fire</div></button>
+          <button class="charBtn" data-char="Riley-L"><strong>Riley-L</strong><div style="color:var(--muted)">🍕 Spread Shot</div></button>
         </div>
         <div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap">
           <span class="pill"><span class="kbd">Click/Tap</span> shoot</span>
@@ -490,58 +632,10 @@
           <span class="pill"><span class="kbd">R</span> restart</span>
           <span class="pill"><span class="kbd">F</span> fullscreen</span>
           <span class="pill"><span class="kbd">,</span> settings</span>
+          <span class="pill"><span class="kbd">M</span> music</span>
         </div>
       </div>`);
     requestAnimationFrame(()=>{
-      document.querySelectorAll('[data-mini]').forEach(el=>{
-        const rect=el.getBoundingClientRect();
-        const off=document.createElement('canvas'); off.width=rect.width; off.height=rect.height;
-        const cx=off.getContext('2d');
-        cx.fillStyle='#0f1832'; cx.fillRect(0,0,off.width,off.height);
-        cx.fillStyle='#8a7848'; cx.fillRect(12,off.height-50,off.width-24,36);
-        const px=off.width/2, py=off.height*.72;
-        if(el.dataset.mini==='Alex'){
-          // Black t-shirt
-          const shirt=cx.createLinearGradient(px-20,py-20,px-20,py+10);
-          shirt.addColorStop(0,'#1c1c1c'); shirt.addColorStop(1,'#333333');
-          cx.fillStyle=shirt; cx.beginPath();
-          cx.moveTo(px-20,py-20); cx.lineTo(px+20,py-20); cx.quadraticCurveTo(px+15,py+10,px,py+10);
-          cx.quadraticCurveTo(px-15,py+10,px-20,py-20); cx.fill();
-          // Jeans
-          const jeans=cx.createLinearGradient(px-15,py+10,px-15,py+30);
-          jeans.addColorStop(0,'#2a3a5a'); jeans.addColorStop(1,'#1e2a3f');
-          cx.fillStyle=jeans; cx.beginPath();
-          cx.rect(px-15,py+10,30,20); cx.fill();
-          // Long straight hair
-          const hair=cx.createLinearGradient(px-15,py-40,px+15,py+25);
-          hair.addColorStop(0,'#3c2f2f'); hair.addColorStop(1,'#1f1515');
-          cx.fillStyle=hair; cx.beginPath();
-          cx.moveTo(px-15,py-40); cx.lineTo(px+15,py-40); cx.lineTo(px+15,py+25); cx.lineTo(px-15,py+25); cx.closePath(); cx.fill();
-        } else {
-          // Maroon sweater
-          const sweater=cx.createLinearGradient(px-20,py-20,px-20,py+10);
-          sweater.addColorStop(0,'#800000'); sweater.addColorStop(1,'#4c0000');
-          cx.fillStyle=sweater; cx.beginPath();
-          cx.moveTo(px-20,py-20); cx.lineTo(px+20,py-20); cx.quadraticCurveTo(px+15,py+10,px,py+10);
-          cx.quadraticCurveTo(px-15,py+10,px-20,py-20); cx.fill();
-          // Black pants
-          const pants=cx.createLinearGradient(px-15,py+10,px-15,py+30);
-          pants.addColorStop(0,'#1c1c1c'); pants.addColorStop(1,'#333333');
-          cx.fillStyle=pants; cx.beginPath();
-          cx.rect(px-15,py+10,30,20); cx.fill();
-          // Long curly hair
-          const hair=cx.createLinearGradient(px-20,py-40,px+20,py-10);
-          hair.addColorStop(0,'#3b1e4a'); hair.addColorStop(1,'#2a1436');
-          cx.fillStyle=hair;
-          for(let i=0;i<8;i++){
-            const offy=i%2?3:-3;
-            cx.beginPath(); cx.arc(px-18+i*4,py-25+offy,7,0,Math.PI*2); cx.fill();
-          }
-          // Hair accessory
-          cx.fillStyle='#ffca38'; cx.beginPath(); cx.arc(px+10,py-30,3,0,Math.PI*2); cx.fill();
-        }
-        el.appendChild(off);
-      });
       overlay.querySelectorAll('.charBtn').forEach(btn=>btn.addEventListener('click',()=>choosePlayer(btn.dataset.char)));
     });
   }
@@ -582,7 +676,14 @@
   ui.btnFS.addEventListener('click', toggleFullscreen);
 
   async function toggleFullscreen(){ try{ if(!document.fullscreenElement){ await container.requestFullscreen({navigationUI:'hide'}); } else { await document.exitFullscreen(); } }catch(e){} }
-  document.addEventListener('fullscreenchange', resize);
+  document.addEventListener('fullscreenchange', ()=>{
+    if(document.fullscreenElement){
+      container.style.maxWidth = 'none';
+    } else {
+      container.style.maxWidth = '960px';
+    }
+    resize();
+  });
 
   // Core flow
   function start(){
@@ -590,7 +691,8 @@
     if(state.running && !state.over) return;
     state.running=true; state.paused=false; state.over=false;
     state.timeLeft=60; state.score=0; state.streak=0; state.bestStreak=0; state.combo=1;
-    state.reaHits=0; state.shots.length=0; state.targets.length=0; state.particles.length=0; state.powerups.length=0; state.pizzas.length=0;
+    state.reaHits=0; state.jaxonHits=0; state.jaxonDoubleEnd=0; state.jaxonDoubleSoundTimer=0;
+    state.shots.length=0; state.targets.length=0; state.particles.length=0; state.powerups.length=0; state.pizzas.length=0;
     state.lastTime=performance.now(); state.lastSpawn=0; state.lastPowerup=0; state.lastManager=0; state.lastPizza=0;
     state.doubleComboEnd=0; state.fireTimer=0; state.pizzaCount=0; state.power={kind:'none',end:0};
     ui.warnings.textContent='0/3'; ui.score.textContent='0'; ui.streak.textContent='0'; ui.combo.textContent='1x'; ui.time.textContent='60.0';
@@ -598,13 +700,13 @@
     setOverlay('');
     setTimeout(spawnTarget,500);
     if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
-    if (state.musicOn) startMusic();
+    if (state.musicOn) { music.enabled = true; startMusic(); } else { music.enabled = false; stopMusic(); }
     loop(performance.now());
   }
   function togglePause(){
     if(!state.running||state.over) return;
     state.paused=!state.paused;
-    if(!state.paused){ setOverlay(''); state.lastTime=performance.now(); if (state.musicOn) startMusic(); loop(state.lastTime); }
+    if(!state.paused){ setOverlay(''); state.lastTime=performance.now(); if (state.musicOn){ music.enabled=true; startMusic(); } loop(state.lastTime); }
     else { setOverlay(`<div class="card" style="text-align:center"><strong>Paused</strong><div style="opacity:.95">Press <span class="kbd">P</span> or tap <em>Pause</em> to resume.</div></div>`); stopMusic(); }
   }
   function restart(changeChar=false){
@@ -629,10 +731,30 @@
     const nextGap=(state._nextGap ?? randi(state.spawnEvery[0],state.spawnEvery[1])/state.difficulty);
     if(state.lastSpawn>=nextGap){ spawnTarget('bald'); state.lastSpawn=0; state._nextGap=randi(state.spawnEvery[0],state.spawnEvery[1])/state.difficulty; }
     if(state.lastPowerup>=randi(state.powerupEvery[0],state.powerupEvery[1])){ spawnPowerup(); state.lastPowerup=0; }
-    if(state.lastManager>=randi(state.managerEvery[0],state.managerEvery[1])){ spawnTarget('rea'); state.lastManager=0; }
+    if(state.lastManager>=randi(state.managerEvery[0],state.managerEvery[1])){ spawnTarget(randi(0,1) ? 'rea' : 'jaxon'); state.lastManager=0; } // Rea-Rea or Jaxon
     if(state.lastPizza>=randi(state.pizzaEvery[0],state.pizzaEvery[1])){ spawnPizza(); state.lastPizza=0; }
 
     if(settings.autoFire && state.autoFireDown){ attemptShoot(); }
+
+    // Update Jaxon movement and trail
+    for(const t of state.targets){
+      if(t.type === 'jaxon'){
+        t.x += t.vx * dt;
+        jaxonTrail(t.x, t.y, t.vx); // Add particle trail
+        if(t.x < -50 || t.x > W + 50) t._expired = true;
+      }
+    }
+
+    // Jaxon double points sound
+    if(state.jaxonDoubleEnd > performance.now()){
+      state.jaxonDoubleSoundTimer -= dtms;
+      if(state.jaxonDoubleSoundTimer <= 0){
+        playSound('jaxonDouble');
+        state.jaxonDoubleSoundTimer = 500; // Play every 0.5s
+      }
+    } else {
+      state.jaxonDoubleSoundTimer = 0;
+    }
 
     for(const s of state.shots){ s.x+=s.vx*dt; s.y+=s.vy*dt; s.age+=dtms;
       if(s.x<-20||s.x>W+20||s.y<-20||s.y>H+20||s.age>1800) s.alive=false; }
@@ -647,7 +769,7 @@
         if(hitTest(s,t)){
           t.hit=true; s.alive=false;
           if (t.type === 'bald') {
-            const points=Math.floor(1*state.combo * (performance.now() < state.doubleComboEnd ? 2 : 1));
+            const points=Math.floor(1*state.combo * (performance.now() < state.doubleComboEnd ? 2 : 1) * (performance.now() < state.jaxonDoubleEnd ? 2 : 1));
             state.score+=points; state.streak+=1; state.bestStreak=Math.max(state.bestStreak,state.streak);
             state.combo=Math.min(5, state.combo+0.25);
             ui.score.textContent=state.score; ui.streak.textContent=state.streak; ui.combo.textContent=`${state.combo.toFixed(2)}x`;
@@ -656,6 +778,15 @@
             state.reaHits++; ui.warnings.textContent=`${state.reaHits}/3`;
             burst(t.x,t.y,'#ff3838', 24, 350); showWarnPopup(t.x, t.y, 'Warning!'); playSound('manager'); shake.start(8,120);
             if (state.reaHits >= 3) { state.over=true; state.running=false; playSound('fired'); showGameOver('fired'); }
+          } else if (t.type === 'jaxon') {
+            t.hitCount = (t.hitCount || 0) + 1;
+            burst(t.x,t.y,'#ffd700', 16, 300); showScorePopup(t.x, t.y, `Jaxon Hit ${t.hitCount}/3!`); playSound('powerup');
+            if(t.hitCount >= 3){
+              state.jaxonDoubleEnd = performance.now() + 5000;
+              state.jaxonDoubleSoundTimer = 0;
+              showScorePopup(t.x, t.y, 'Jaxon Bonus: 2x Points!');
+              t._expired = true;
+            }
           }
           break;
         }
@@ -666,7 +797,7 @@
         if(powerupHitTest(s,p)){
           p.collected=true; s.alive=false;
           if (p.type === 0) { state.timeLeft+=5; showScorePopup(p.x, p.y, '+5s'); }
-          else if (p.type === 1) { state.score+=Math.round(10*state.combo); showScorePopup(p.x, p.y, '+10'); }
+          else if (p.type === 1) { state.score+=Math.round(10*state.combo * (performance.now() < state.jaxonDoubleEnd ? 2 : 1)); showScorePopup(p.x, p.y, '+10'); }
           else if (p.type === 2) { state.doubleComboEnd = performance.now() + 5000; showScorePopup(p.x, p.y, 'Double Combo!'); }
           ui.score.textContent=state.score; ui.time.textContent=Math.max(0,state.timeLeft).toFixed(1);
           burst(p.x,p.y,p.color, 20, 300); playSound('powerup'); break;
@@ -687,10 +818,12 @@
 
     const now=performance.now();
     for(const t of state.targets){
-      t.popT += dtms;
-      if(!t._expired && now-t.t0>=t.life){
-        t._expired=true;
-        if(!t.hit){ state.streak=0; state.combo=1; ui.streak.textContent=state.streak; ui.combo.textContent='1x'; playSound('miss'); }
+      if(t.type !== 'jaxon'){
+        t.popT += dtms;
+        if(!t._expired && now-t.t0>=t.life){
+          t._expired=true;
+          if(!t.hit && t.type !== 'rea'){ state.streak=0; state.combo=1; ui.streak.textContent=state.streak; ui.combo.textContent='1x'; playSound('miss'); }
+        }
       }
     }
     state.targets=state.targets.filter(t=> now-t.t0 < (t.life+250));
@@ -712,12 +845,13 @@
 
   function render(){
     drawBackground();
-    for(const t of state.targets){ if(!t._expired) drawTarget(t); }
+    for(const p of state.particles) drawParticles(p); // Draw particles first
+    for(const t of state.targets){ if(!t._expired && t.type !== 'jaxon') drawTarget(t); } // Non-Jaxon targets
     for(const p of state.powerups){ if(!p.collected) drawPowerupStar(p); }
     for(const z of state.pizzas){ if(!z.collected) drawPizza(z); }
     for(const s of state.shots) drawShot(s);
+    for(const t of state.targets){ if(!t._expired && t.type === 'jaxon') drawTarget(t); } // Jaxon last
     drawPlayer();
-    for(const p of state.particles) drawParticles(p);
   }
 
   // Start up / settings wiring
@@ -730,7 +864,14 @@
   ui.autoFire.addEventListener('change', ()=>{ settings.autoFire=ui.autoFire.checked; localStorage.setItem('bratzz_autoFire', settings.autoFire); });
   ui.hitboxes.addEventListener('change', ()=>{ settings.hitboxes=ui.hitboxes.checked; localStorage.setItem('bratzz_hitboxes', settings.hitboxes); });
   ui.hiContrast.addEventListener('change', ()=>{ settings.hiContrast=ui.hiContrast.checked; localStorage.setItem('bratzz_hiContrast', settings.hiContrast); document.body.classList.toggle('hi-contrast', settings.hiContrast); });
-  ui.musicOn.addEventListener('change', ()=>{ settings.musicOn=ui.musicOn.checked; localStorage.setItem('bratzz_musicOn', settings.musicOn); state.musicOn=settings.musicOn; if(state.running){ settings.musicOn?startMusic():stopMusic(); } ui.btnMute.textContent = state.musicOn ? 'Mute Music' : 'Unmute Music'; });
+  ui.musicOn.addEventListener('change', ()=>{ 
+    settings.musicOn=ui.musicOn.checked; 
+    localStorage.setItem('bratzz_musicOn', settings.musicOn); 
+    state.musicOn=settings.musicOn; 
+    music.enabled = settings.musicOn;
+    ui.btnMute.textContent = state.musicOn ? 'Mute Music' : 'Unmute Music';
+    if(state.running){ settings.musicOn ? startMusic() : stopMusic(); } 
+  });
   ui.sfxVol.addEventListener('input', ()=>{ settings.sfxVol=parseFloat(ui.sfxVol.value); localStorage.setItem('bratzz_sfxVol', settings.sfxVol); });
 
 })();
