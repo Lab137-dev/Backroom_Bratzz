@@ -37,9 +37,6 @@
             font-weight:700;font-size:clamp(13px,2.3vw,17px);text-shadow:0 1px 2px rgba(0,0,0,.6);flex-wrap:wrap}
   .pill{background:linear-gradient(180deg,rgba(20,26,42,.95),rgba(12,18,32,.95));border:1px solid var(--line);
         padding:.5rem .8rem;border-radius:999px;backdrop-filter:blur(8px);color:var(--ink);box-shadow:0 4px 12px rgba(0,0,0,.3)}
-  .power-hud{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);pointer-events:none;font-weight:700;font-size:clamp(16px,2.8vw,20px);text-shadow:0 1px 2px rgba(0,0,0,.6)}
-  .power-hud .pill{pointer-events:auto;}
-
   .centerMsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
   .card{pointer-events:auto;background:linear-gradient(180deg,var(--panel-2),#0b1328);
         border:2px solid var(--line);border-radius:20px;padding:24px;max-width:min(620px,94%);
@@ -50,18 +47,17 @@
            transition:.2s transform,.2s box-shadow,.2s border-color;color:var(--ink);box-shadow:0 0 10px rgba(92,163,255,.5), inset 0 0 5px rgba(92,163,255,.3);
            animation:shimmer 2s linear infinite alternate;}
   .charBtn:hover{transform:translateY(-3px);box-shadow:0 0 20px rgba(92,163,255,.7), inset 0 0 10px rgba(92,163,255,.5);border-color:#7bbfff}
-  .mini{width:100%;aspect-ratio:4/3;background:#0e1632;border:2px dashed var(--line);border-radius:12px;margin-bottom:10px;position:relative;overflow:hidden}
   .kbd{padding:3px 7px;border:1px solid var(--line);border-radius:8px;background:#10162a;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
   .score-pop{position:absolute;font-size:16px;font-weight:700;color:var(--combo);animation:scorePop 1s ease-out forwards;text-shadow:0 2px 4px rgba(0,0,0,.5);pointer-events:none}
   @keyframes scorePop{0%{transform:translateY(0) scale(1);opacity:1} 50%{transform:translateY(-30px) scale(1.2)} 100%{transform:translateY(-50px) scale(1);opacity:0}}
   .warn-pop{position:absolute;font-size:24px;font-weight:700;color:var(--danger);animation:warnPop 1.5s ease-out forwards;text-shadow:0 2px 4px rgba(0,0,0,.5);pointer-events:none}
   @keyframes warnPop{
-    0% {transform:translateY(0) scale(1);opacity:1;color:var(--danger);}
-    20% {transform:translateY(-10px) scale(1.8);color:#ffffff;}
-    40% {transform:translateY(-20px) scale(1.2);color:var(--danger);}
-    60% {transform:translateY(-30px) scale(1.6);color:#ffffff;}
-    80% {transform:translateY(-40px) scale(1.3);color:var(--danger);}
-    100% {transform:translateY(-60px) scale(1);opacity:0;color:var(--danger);}
+    0% {transform:translateY(0) scale(1);opacity:1}
+    20% {transform:translateY(-10px) scale(1.8);color:#ffffff}
+    40% {transform:translateY(-20px) scale(1.2)}
+    60% {transform:translateY(-30px) scale(1.6);color:#ffffff}
+    80% {transform:translateY(-40px) scale(1.3)}
+    100% {transform:translateY(-60px) scale(1);opacity:0}
   }
   dialog{border:none;border-radius:16px;max-width:560px;width:clamp(280px,90vw,560px);background:linear-gradient(180deg,var(--panel-2),#0b1328);color:var(--ink);padding:0;box-shadow:0 16px 48px rgba(0,0,0,.6)}
   dialog::backdrop{background: rgba(0,0,0,.6)}
@@ -89,7 +85,7 @@
       <button id="btnRestart" class="btn">Restart</button>
       <button id="btnFS" class="btn good" title="Fullscreen (F)">Fullscreen</button>
       <button id="btnSettings" class="btn">Settings</button>
-      <button id="btnMute" class="btn">Mute All</button>
+      <button id="btnMute" class="btn">Mute</button>
     </div>
   </header>
 
@@ -104,14 +100,14 @@
         <div class="pill">Combo: <span id="combo">1x</span></div>
         <div class="pill">Warnings: <span id="warnings">0/3</span></div>
         <div class="pill">Pizza: <span id="pizza">0/3</span></div>
+        <div class="pill">Power: <span id="power">None</span></div>
       </div>
-      <div class="power-hud" id="powerHud"><div class="pill">Power: <span id="power">None</span></div></div>
       <div class="centerMsg" id="overlay"></div>
     </div>
   </div>
 
   <footer>
-    Tap/click (or hold) to shoot blue rubber bands. Stars = bonuses. Avoid Rea-Rea (manager)—3 hits and you’re fired. Hit Jaxon (fast manager) 3 times to unlock Ninja (this game only). Collect 🍕 pizzas (3) to trigger your character’s special: Alex = Rapid Fire, Riley-L = Spread Shot. Ninja shoots ninja-stars and pizza gives 10 points. New: Levels with increasing difficulty, shield powerup! Hotkeys: <span class="kbd">F</span> Fullscreen, <span class="kbd">Space</span> Shoot, <span class="kbd">P</span> Pause, <span class="kbd">R</span> Restart, <span class="kbd">,</span> Settings, <span class="kbd">M</span> Music.
+    Tap/click (or hold) to shoot blue rubber bands. Stars = bonuses. Avoid Rea-Rea (manager)—3 hits and you’re fired. Hit Jaxon (fast manager) 3 times to unlock Ninja (this session). Collect 🍕 pizzas (3) to trigger your character’s special: Alex = Rapid Fire, Riley-L = Spread Shot. Ninja shoots ninja-stars and pizza gives 10 points. Hotkeys: <span class="kbd">F</span> Fullscreen, <span class="kbd">Space</span> Shoot, <span class="kbd">P</span> Pause, <span class="kbd">R</span> Restart, <span class="kbd">,</span> Settings, <span class="kbd">M</span> Mute.
   </footer>
 </div>
 
@@ -129,13 +125,13 @@
     <div class="badge">Settings are saved automatically</div>
   </div>
 </dialog>
+
 <script>
 (() => {
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d');
   const container = document.getElementById('game');
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-
   ['touchmove','dblclick'].forEach(ev=>document.addEventListener(ev, e=>e.preventDefault(), {passive:false}));
 
   function resize(){
@@ -146,10 +142,13 @@
   }
   new ResizeObserver(resize).observe(canvas); resize();
 
-  // WebAudio unlock + shared context
+  // ==== Audio ====
   const audioCtx = (window.AudioContext ? new AudioContext() : null);
+  let soundEnabled = true; // Mute button controls this (mutes ALL sound)
   ['pointerdown','touchstart','click'].forEach(ev =>
-    window.addEventListener(ev, () => { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }, { once:true, passive:true })
+    window.addEventListener(ev, () => {
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }, { once:true, passive:true })
   );
 
   // Overlay helper
@@ -167,7 +166,6 @@
     warnings: document.getElementById('warnings'),
     pizza: document.getElementById('pizza'),
     power: document.getElementById('power'),
-    powerHud: document.getElementById('powerHud'),
     btnStart: document.getElementById('btnStart'),
     btnPause: document.getElementById('btnPause'),
     btnRestart: document.getElementById('btnRestart'),
@@ -186,11 +184,11 @@
     autoFire: JSON.parse(localStorage.getItem('bratzz_autoFire') || 'true'),
     hitboxes: JSON.parse(localStorage.getItem('bratzz_hitboxes') || 'false'),
     hiContrast: JSON.parse(localStorage.getItem('bratzz_hiContrast') || 'false'),
-    musicOn: JSON.parse(localStorage.getItem('bratzz_musicOn') || 'true'),
+    musicOn: JSON.parse(localStorage.getItem('bratzz_musicOn') || 'false'), // default off
     sfxVol: parseFloat(localStorage.getItem('bratzz_sfxVol') || '0.8')
   };
 
-  // Game state
+  // World + state
   const W = 960, H = 600;
   const state = {
     running:false, paused:false, over:false,
@@ -198,10 +196,10 @@
     timeLeft:60, score:0, streak:0, bestStreak:0, combo:1,
     reaHits:0, player:null, shots:[], targets:[], particles:[], powerups:[], pizzas:[],
     lastSpawn:0, spawnEvery:[500,1000], lastTime:0, difficulty:1,
-    lastPowerup:0, powerupEvery:[4000,7000],
+    lastPowerup:0, powerupEvery:[3000,6000],
     lastManager:0, managerEvery:[8000,12000],
-    lastPizza:0, pizzaEvery:[5000,9000],
-    musicOn: settings.musicOn, doubleComboEnd:0,
+    lastPizza:0, pizzaEvery:[4000,7000],
+    doubleComboEnd:0,
     highScore: +localStorage.getItem('bratzzHighScore') || 0,
     highStreak: +localStorage.getItem('bratzzHighStreak') || 0,
     fireCooldownMs: 180, fireTimer: 0, autoFireDown:false,
@@ -209,7 +207,8 @@
     power: {kind:'none', end:0},
     jaxonHits:0, jaxonDoubleEnd:0, jaxonDoubleSoundTimer:0,
     shield:0,
-    muted:false   // MUTE ALL (music + SFX)
+    ninjaUnlocked:false, // persists across restarts this page session
+    musicOn: settings.musicOn
   };
 
   function applySettingsToUI(){
@@ -219,8 +218,6 @@
     ui.musicOn.checked = settings.musicOn;
     ui.sfxVol.value = settings.sfxVol;
     document.body.classList.toggle('hi-contrast', settings.hiContrast);
-    state.musicOn = settings.musicOn;
-    ui.btnMute.textContent = state.musicOn && !state.muted ? 'Mute All' : 'Unmute All';
   }
   applySettingsToUI();
 
@@ -230,7 +227,7 @@
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const lerp=(a,b,t)=>a+(b-a)*t;
 
-  // Pointer
+  // Input (player is stationary gun; pointer aims)
   let pointer={x:W/2,y:H/2,down:false};
   canvas.addEventListener('pointermove',e=>{
     const r=canvas.getBoundingClientRect();
@@ -251,9 +248,9 @@
   });
   window.addEventListener('keyup',e=>{ if(e.code==='Space'){ state.autoFireDown = false; } });
 
-  // SFX
+  // Sound (SFX)
   function playSound(type='hit'){
-    if(!audioCtx || state.muted) return;
+    if(!audioCtx || !soundEnabled) return;
     const o=audioCtx.createOscillator(), g=audioCtx.createGain();
     o.connect(g); g.connect(audioCtx.destination);
     g.gain.value = 0.001;
@@ -289,8 +286,8 @@
     o.start(now); o.stop(now+0.7);
   }
 
-  // Music
-  const music = { enabled: !!settings.musicOn, bpm:112, barBeats:4, timer:null, master:null };
+  // Minimal music ping (muted by soundEnabled as well)
+  const music = { enabled: settings.musicOn, bpm:112, barBeats:4, timer:null, master:null };
   function ensureMusicNodes() {
     if (!audioCtx) return;
     if (!music.master) {
@@ -300,7 +297,7 @@
     }
   }
   function scheduleBellHit(when = audioCtx.currentTime) {
-    if (!audioCtx) return;
+    if (!audioCtx || !soundEnabled) return;
     const carrier = new OscillatorNode(audioCtx, { type: 'sine', frequency: 1200 });
     const carGain = new GainNode(audioCtx, { gain: 0.0001 });
     const mod = new OscillatorNode(audioCtx, { type: 'sine', frequency: 760 });
@@ -332,12 +329,12 @@
     carrier.stop(a + 0.6); mod.stop(a + 0.6); noise.stop(a + 0.2);
   }
   function startMusic() {
-    if (!audioCtx || !music.enabled || state.muted) return;
+    if (!audioCtx || !music.enabled || !soundEnabled) return;
     ensureMusicNodes();
     const beat = 60 / music.bpm;
     const bar  = beat * music.barBeats;
     function tick() {
-      if (!music.enabled || state.muted) return;
+      if (!music.enabled || !soundEnabled) return;
       const t0 = audioCtx.currentTime + 0.02;
       scheduleBellHit(t0);
       music.timer = setTimeout(tick, bar * 1000);
@@ -345,18 +342,7 @@
     tick();
   }
   function stopMusic() { if (music.timer) { clearTimeout(music.timer); music.timer = null; } }
-
-  // Mute ALL (music+SFX)
-  ui.btnMute.addEventListener('click', () => {
-    state.muted = !state.muted;
-    settings.musicOn = !state.muted;
-    state.musicOn = settings.musicOn;
-    localStorage.setItem('bratzz_musicOn', settings.musicOn);
-    ui.btnMute.textContent = state.muted ? 'Unmute All' : 'Mute All';
-    if (state.muted) stopMusic(); else if (state.musicOn) { if (audioCtx && audioCtx.state==='suspended') audioCtx.resume(); startMusic(); }
-  });
-
-  // Entities
+  // Spawning
   function spawnTarget(type='bald'){
     if (type === 'jaxon') {
       const speed = 600 * 0.75 * (1 + state.level * 0.1);
@@ -364,25 +350,31 @@
       const x = vx > 0 ? -40 : W + 40;
       const y = 95;
       state.targets.push({x, y, w:40, h:40, vx, life:2000 / (1 + state.level * 0.2), t0:performance.now(), hit:false, type, hitCount:0});
-    } else {
+    } else if (type === 'manager') {
+      // Rea-Rea (pop-up like regular but penalizes on hit)
       const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
       const x=(lane+1)*laneW, baseY=H*0.55, popH=rand(34,58);
       const life=rand(650,1200)/state.difficulty / (1 + state.level * 0.2);
-      // type can be 'bald' or 'manager'
-      state.targets.push({x, y:baseY, targetY:baseY-popH, w:40, h:48, life, t0:performance.now(), hit:false, type, popT:0});
+      state.targets.push({x, y:baseY, targetY:baseY-popH, w:40, h:48, life, t0:performance.now(), hit:false, type:'manager', popT:0});
+    } else {
+      // Bald
+      const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
+      const x=(lane+1)*laneW, baseY=H*0.55, popH=rand(34,58);
+      const life=rand(650,1200)/state.difficulty / (1 + state.level * 0.2);
+      state.targets.push({x, y:baseY, targetY:baseY-popH, w:40, h:48, life, t0:performance.now(), hit:false, type:'bald', popT:0});
     }
   }
   function spawnPowerup(){
     const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
     const x=(lane+1)*laneW, baseY=H*0.55;
-    const type=randi(0,3); // 3 = shield
+    const type=randi(0,3); // 0:+time,1:+score,2:double combo,3:shield
     const color = type===2 ? '#5ca3ff' : (type===3 ? '#00ff00' : '#ff5c5c');
-    state.powerups.push({x, y:baseY-40, size:18, life:2000, t0:performance.now(), collected:false, type, color});
+    state.powerups.push({x, y:baseY-40, size:18, life:2500, t0:performance.now(), collected:false, type, color});
   }
   function spawnPizza(){
     const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
     const x=(lane+1)*laneW, baseY=H*0.55;
-    state.pizzas.push({x, y:baseY-40, size:20, life:2600, t0:performance.now(), collected:false});
+    state.pizzas.push({x, y:baseY-40, size:20, life:5500, t0:performance.now(), collected:false});
   }
 
   // Shooting
@@ -394,7 +386,7 @@
     shootOnce(); state.fireTimer = now;
   }
   function currentCooldown(){
-    if(state.player && state.player.name === 'Ninja') return 70;
+    if(state.player?.name === 'Ninja') return 70;
     if(state.power.kind === 'rapid') return 70;
     return 180;
   }
@@ -402,18 +394,16 @@
     playSound('shoot');
     const px=W/2, py=H*0.86, dx=pointer.x-px, dy=pointer.y-py, baseAngle=Math.atan2(dy,dx);
     const baseSpeed = 1050;
-    const spreadActive = state.power.kind === 'spread' || (state.player && state.player.name === 'Ninja');
+    const spreadActive = state.power.kind === 'spread' || state.player?.name === 'Ninja';
     const shots = spreadActive ? [{ang:baseAngle-0.12,r:6},{ang:baseAngle,r:6},{ang:baseAngle+0.12,r:6}]
                                : [{ang:baseAngle,r:5}];
-    for(const s of shots){
-      state.shots.push({x:px,y:py,vx:Math.cos(s.ang)*baseSpeed,vy:Math.sin(s.ang)*baseSpeed,r:s.r,alive:true,age:0,ninjaStar:(state.player && state.player.name==='Ninja')});
-    }
+    for(const s of shots){ state.shots.push({x:px,y:py,vx:Math.cos(s.ang)*baseSpeed,vy:Math.sin(s.ang)*baseSpeed,r:s.r,alive:true,age:0,ninjaStar:state.player?.name==='Ninja'}); }
     shake.start(4,60); if (navigator.vibrate) navigator.vibrate(10);
   }
 
-  // Pizza / Power
+  // Pizza flow
   function givePizza(){
-    if(state.player && state.player.name === 'Ninja') {
+    if(state.player?.name === 'Ninja') {
       state.score += 10;
       ui.score.textContent = state.score;
       showScorePopup(W*0.5, H*0.25, '+10');
@@ -436,25 +426,22 @@
     showScorePopup(W*0.5, H*0.25, kind==='rapid' ? '🍕 Rapid Fire!' : '🍕 Spread Shot!');
   }
   function updatePowerTimer(){
-    if(state.player && state.player.name === 'Ninja'){ ui.power.textContent = 'Ninja Mode'; return; }
+    if(state.player?.name === 'Ninja') { ui.power.textContent = 'Ninja Mode'; return; }
     if(state.power.kind==='none'){ ui.power.textContent = 'None'; return; }
     const remain = Math.max(0, state.power.end - performance.now());
-    if(remain<=0){ state.power.kind='none'; state.power.end=0; ui.power.textContent='None'; }
-    else { ui.power.textContent = `${state.power.kind==='rapid'?'Rapid Fire':'Spread'} ${(remain/1000).toFixed(1)}s`; }
+    if(remain<=0){
+      state.power.kind='none'; state.power.end=0;
+      ui.power.textContent='None';
+    }else{
+      ui.power.textContent = `${state.power.kind==='rapid'?'Rapid Fire':'Spread'} ${(remain/1000).toFixed(1)}s`;
+    }
   }
 
   // Shake / particles
-  let dtms=0;
   const shake={mag:0,dur:0,t:0,start(m,d){this.mag=m;this.dur=d;this.t=0;},offset(){if(this.t>=this.dur)return{x:0,y:0};this.t+=dtms;const k=1-(this.t/this.dur);return{x:(Math.random()*2-1)*this.mag*k,y:(Math.random()*2-1)*this.mag*k};}};
   function burst(x,y,color,count=20,speed=300){
-    for(let i=0;i<count;i++){
-      const a=rand(0,Math.PI*2), v=rand(speed*.5,speed);
-      state.particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rand(200,400),age:0,color,size:rand(2,5)});
-    }
-    if(color === '#ffd700') for(let i=0;i<10;i++){
-      const a=rand(0,Math.PI*2), v=rand(100,200);
-      state.particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rand(300,500),age:0,color:'#ffffff',size:rand(1,3)});
-    }
+    for(let i=0;i<count;i++){ const a=rand(0,Math.PI*2), v=rand(speed*.5,speed); state.particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rand(200,400),age:0,color,size:rand(2,5)}); }
+    if(color === '#ffd700') for(let i=0;i<10;i++){ const a=rand(0,Math.PI*2), v=rand(100,200); state.particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rand(300,500),age:0,color:'#ffffff',size:rand(1,3)}); }
   }
   function jaxonTrail(x,y,vx){
     const a = vx > 0 ? Math.PI : 0;
@@ -464,13 +451,8 @@
     }
   }
 
-  // Draw helpers
+  // Drawing
   function fillRectGrad(x,y,w,h,c1,c2){ const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,c1); g.addColorStop(1,c2); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); }
-  function positionPopup(el,x,y){
-    const rect=canvas.getBoundingClientRect();
-    const px=(x/W)*rect.width, py=(y/H)*rect.height;
-    el.style.left=px+'px'; el.style.top=py+'px'; el.style.transform='translate(-50%,-50%)';
-  }
   function drawBackground(){
     const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#161e3a'); g.addColorStop(1,'#0c142a');
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
@@ -485,29 +467,25 @@
       }
     }
     for(let i=0;i<8;i++){ const cx=(i+0.5)*W/9; ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fillRect(cx-50,20,100,12); ctx.strokeStyle='rgba(92,163,255,.15)'; ctx.lineWidth=1; ctx.strokeRect(cx-50,20,100,12); }
-    ctx.fillStyle = `rgba(255, 0, 0, ${state.level * 0.02})`;
-    ctx.fillRect(0,0,W,H);
   }
-
   function drawPlayer(){
     if(!state.player) return;
     const px=W/2, py=H*0.86;
     if(state.player.name==='Alex'){
+      // head
       ctx.fillStyle='#f2d4c7'; ctx.beginPath(); ctx.ellipse(px,py-60,15,20,0,0,Math.PI*2); ctx.fill();
+      // shirt
       const shirt=ctx.createLinearGradient(px-25,py-40,px-25,py+10); shirt.addColorStop(0,'#1c1c1c'); shirt.addColorStop(1,'#333333');
       ctx.fillStyle=shirt; ctx.beginPath(); ctx.moveTo(px-25,py-40); ctx.lineTo(px+25,py-40); ctx.quadraticCurveTo(px+20,py+10,px,py+10); ctx.quadraticCurveTo(px-20,py+10,px-25,py-40); ctx.fill();
-      ctx.fillStyle='#1c1c1c'; ctx.fillRect(px-30,py-40,10,30); ctx.fillRect(px+20,py-40,10,30);
-      const jeans=ctx.createLinearGradient(px-20,py+10,px-20,py+50); jeans.addColorStop(0,'#2a3a5a'); jeans.addColorStop(1,'#1e2a3f');
-      ctx.fillStyle=jeans; ctx.fillRect(px-20,py+10,40,40);
-      const hair=ctx.createLinearGradient(px-25,py-80,px+25,py+50); hair.addColorStop(0,'#3c2f2f'); hair.addColorStop(1,'#1f1515');
-      ctx.fillStyle=hair; ctx.beginPath(); ctx.moveTo(px-25,py-80); ctx.lineTo(px+25,py-80); ctx.lineTo(px+25,py+50); ctx.lineTo(px-25,py+50); ctx.closePath(); ctx.fill();
+      // legs
+      const jeans=ctx.createLinearGradient(px-20,py+10,px-20,py+50); jeans.addColorStop(0,'#2a3a5a'); jeans.addColorStop(1,'#1e2a3f'); ctx.fillStyle=jeans; ctx.fillRect(px-20,py+10,40,40);
+      // hair
+      const hair=ctx.createLinearGradient(px-25,py-80,px+25,py+50); hair.addColorStop(0,'#3c2f2f'); hair.addColorStop(1,'#1f1515'); ctx.fillStyle=hair; ctx.fillRect(px-25,py-80,50,70);
     } else if(state.player.name==='Riley-L'){
       ctx.fillStyle='#f2d4c7'; ctx.beginPath(); ctx.ellipse(px,py-60,15,20,0,0,Math.PI*2); ctx.fill();
       const sweater=ctx.createLinearGradient(px-25,py-40,px-25,py+10); sweater.addColorStop(0,'#800000'); sweater.addColorStop(1,'#4c0000');
       ctx.fillStyle=sweater; ctx.beginPath(); ctx.moveTo(px-25,py-40); ctx.lineTo(px+25,py-40); ctx.quadraticCurveTo(px+20,py+10,px,py+10); ctx.quadraticCurveTo(px-20,py+10,px-25,py-40); ctx.fill();
-      ctx.fillStyle='#800000'; ctx.fillRect(px-30,py-40,10,30); ctx.fillRect(px+20,py-40,10,30);
-      const pants=ctx.createLinearGradient(px-20,py+10,px-20,py+50); pants.addColorStop(0,'#1c1c1c'); pants.addColorStop(1,'#333333');
-      ctx.fillStyle=pants; ctx.fillRect(px-20,py+10,40,40);
+      const pants=ctx.createLinearGradient(px-20,py+10,px-20,py+50); pants.addColorStop(0,'#1c1c1c'); pants.addColorStop(1,'#333333'); ctx.fillStyle=pants; ctx.fillRect(px-20,py+10,40,40);
       const hair=ctx.createLinearGradient(px-40,py-80,px+40,py-20); hair.addColorStop(0,'#3b1e4a'); hair.addColorStop(1,'#2a1436');
       ctx.fillStyle=hair; for(let i=0;i<12;i++){ const off=i%2?6:-6; ctx.beginPath(); ctx.arc(px-36+i*6,py-50+off,14,0,Math.PI*2); ctx.fill(); }
       ctx.fillStyle='#ffca38'; ctx.beginPath(); ctx.arc(px+20,py-70,6,0,Math.PI*2); ctx.fill();
@@ -515,24 +493,26 @@
       ctx.fillStyle='#1c1c1c'; ctx.beginPath(); ctx.ellipse(px,py-60,15,20,0,0,Math.PI*2); ctx.fill();
       const suit=ctx.createLinearGradient(px-25,py-40,px-25,py+10); suit.addColorStop(0,'#1c1c1c'); suit.addColorStop(1,'#333333');
       ctx.fillStyle=suit; ctx.beginPath(); ctx.moveTo(px-25,py-40); ctx.lineTo(px+25,py-40); ctx.quadraticCurveTo(px+20,py+10,px,py+10); ctx.quadraticCurveTo(px-20,py+10,px-25,py-40); ctx.fill();
-      ctx.fillStyle='#1c1c1c'; ctx.fillRect(px-30,py-40,10,30); ctx.fillRect(px+20,py-40,10,30);
       ctx.fillStyle='#1c1c1c'; ctx.fillRect(px-20,py+10,40,40);
       const hood=ctx.createLinearGradient(px-25,py-80,px+25,py-20); hood.addColorStop(0,'#1c1c1c'); hood.addColorStop(1,'#333333');
-      ctx.fillStyle=hood; ctx.beginPath(); ctx.moveTo(px-25,py-80); ctx.lineTo(px+25,py-80); ctx.lineTo(px+25,py-20); ctx.lineTo(px-25,py-20); ctx.closePath(); ctx.fill();
+      ctx.fillStyle=hood; ctx.fillRect(px-25,py-80,50,60);
     }
+    // launcher line
     ctx.fillStyle = state.player.name==='Alex' ? '#5ca3ff' : (state.player.name==='Riley-L' ? '#b266ff' : '#1c1c1c');
     ctx.fillRect(px-14,py-16,28,12);
     ctx.fillStyle='rgba(255,255,255,.2)'; ctx.fillRect(px-14,py-16,28,3);
     ctx.strokeStyle='rgba(92,163,255,.5)'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(px,py-10); ctx.lineTo(pointer.x,pointer.y); ctx.stroke();
 
+    // shield ring
     if (state.shield > 0) {
       const shieldAlpha = (state.shield * 0.5) / 3;
       ctx.strokeStyle = `rgba(0, 255, 0, ${shieldAlpha})`;
       ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.arc(px, py, 50, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(px, py, 50, 0, Math.PI * 2);
+      ctx.stroke();
     }
   }
-
   function drawTarget(t){
     if(t.type==='jaxon'){
       const x=t.x, y=t.y;
@@ -540,8 +520,7 @@
       ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(x,y,50,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#f2d4c7'; ctx.fillRect(x-20,y-20,40,40);
       ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.lineWidth=1; ctx.strokeRect(x-20,y-20,40,40);
-      const hair=ctx.createLinearGradient(x-25,y-30,x+25,y-10); hair.addColorStop(0,'#3c2f2f'); hair.addColorStop(1,'#1f1515');
-      ctx.fillStyle=hair; ctx.fillRect(x-25,y-30,50,20);
+      const hair=ctx.createLinearGradient(x-25,y-30,x+25,y-10); hair.addColorStop(0,'#3c2f2f'); hair.addColorStop(1,'#1f1515'); ctx.fillStyle=hair; ctx.fillRect(x-25,y-30,50,20);
       ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(x-8,y-5,3,0,Math.PI*2); ctx.arc(x+8,y-5,3,0,Math.PI*2); ctx.fill();
       ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-8,y+10); ctx.lineTo(x+8,y+10); ctx.stroke();
     } else {
@@ -555,369 +534,381 @@
         ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(x-7,y-3,3,0,Math.PI*2); ctx.arc(x+7,y-3,3,0,Math.PI*2); ctx.fill();
         ctx.strokeStyle='#b0b8c0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x-6,y+10); ctx.lineTo(x,y+16); ctx.lineTo(x+6,y+10); ctx.stroke();
         ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-10,y-9); ctx.lineTo(x-3,y-11); ctx.moveTo(x+10,y-9); ctx.lineTo(x+3,y-11); ctx.stroke();
-      } else { // manager
+      } else if(t.type==='manager'){
         const hg=ctx.createLinearGradient(x-25,y-30,x+25,y-10); hg.addColorStop(0,'#a0a0a0'); hg.addColorStop(1,'#808080');
         ctx.fillStyle=hg; ctx.beginPath(); ctx.moveTo(x-22,y-25); ctx.quadraticCurveTo(x,y-35,x+22,y-25); ctx.lineTo(x+22,y-5); ctx.quadraticCurveTo(x,y-15,x-22,y-5); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x-8,y-3,5,0,Math.PI*2); ctx.arc(x+8,y-3,5,0,Math.PI*2);
-        ctx.moveTo(x-13,y-3); ctx.lineTo(x-3,y-3); ctx.moveTo(x+3,y-3); ctx.lineTo(x+13,y-3); ctx.stroke();
+        ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x-8,y-3,5,0,Math.PI*2); ctx.arc(x+8,y-3,5,0,Math.PI*2); ctx.moveTo(x-13,y-3); ctx.lineTo(x-3,y-3); ctx.moveTo(x+3,y-3); ctx.lineTo(x+13,y-3); ctx.stroke();
         ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(x-8,y-3,2,0,Math.PI*2); ctx.arc(x+8,y-3,2,0,Math.PI*2); ctx.fill();
         ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-8,y+10); ctx.lineTo(x+8,y+10); ctx.stroke();
       }
     }
   }
-
   function drawShot(s){
     if(s.ninjaStar){
       const x=s.x, y=s.y, size=8;
       ctx.save(); ctx.translate(x,y); ctx.rotate(s.age/100);
       const g=ctx.createRadialGradient(0,0,0,0,0,size); g.addColorStop(0,'#5ca3ff'); g.addColorStop(1,'rgba(92,163,255,.1)');
-      ctx.fillStyle=g; ctx.beginPath();
-      for(let i=0;i<4;i++){ const a=i*Math.PI*2/4; ctx.lineTo(Math.cos(a)*size,Math.sin(a)*size); ctx.lineTo(Math.cos(a+Math.PI/4)*size*0.5,Math.sin(a+Math.PI/4)*size*0.5); }
-      ctx.closePath(); ctx.fill(); ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
+      ctx.fillStyle=g; ctx.beginPath(); for(let i=0;i<4;i++){ const a=i*Math.PI*2/4; ctx.lineTo(Math.cos(a)*size,Math.sin(a)*size); ctx.lineTo(Math.cos(a+Math.PI/4)*size*0.5,Math.sin(a+Math.PI/4)*size*0.5); } ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
     } else {
       const grad=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,10); grad.addColorStop(0,'#5ca3ff'); grad.addColorStop(1,'rgba(92,163,255,.2)');
       ctx.strokeStyle=grad; ctx.lineWidth=4; ctx.beginPath(); ctx.ellipse(s.x,s.y,9,5,0,0,Math.PI*2); ctx.stroke();
       ctx.fillStyle='rgba(92,163,255,.35)'; ctx.beginPath(); ctx.ellipse(s.x,s.y,7,4,0,0,Math.PI*2); ctx.fill();
     }
   }
-
   function drawPowerupStar(p){
     const x=p.x, y=p.y, s=p.size;
     ctx.save(); ctx.translate(x,y); ctx.rotate((performance.now()-p.t0)/500);
     const g=ctx.createRadialGradient(0,0,0,0,0,s); g.addColorStop(0,p.color); g.addColorStop(1,'rgba(255,255,255,.1)');
-    ctx.fillStyle=g; ctx.beginPath();
-    for(let i=0;i<5;i++){ const a=i*Math.PI*2/5; ctx.lineTo(Math.cos(a)*s,Math.sin(a)*s); ctx.lineTo(Math.cos(a+Math.PI/5)*s*0.5,Math.sin(a+Math.PI/5)*s*0.5); }
-    ctx.closePath(); ctx.fill(); ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
-  }
-
-  function drawPizza(p){
-    const x=p.x, y=p.y, s=p.size;
-    ctx.save(); ctx.translate(x,y); ctx.rotate((performance.now()-p.t0)/500);
-    const g=ctx.createRadialGradient(0,0,0,0,0,s); g.addColorStop(0,'#ff6347'); g.addColorStop(0.5,'#ff4500'); g.addColorStop(1,'rgba(255,69,0,.1)');
-    ctx.fillStyle=g; ctx.beginPath();
-    ctx.moveTo(0,-s); ctx.lineTo(s*Math.cos(Math.PI/6),-s*Math.sin(Math.PI/6));
-    ctx.lineTo(s*Math.cos(Math.PI/3),s*Math.sin(Math.PI/3)); ctx.lineTo(0,s);
-    ctx.lineTo(-s*Math.cos(Math.PI/3),s*Math.sin(Math.PI/3)); ctx.lineTo(-s*Math.cos(Math.PI/6),-s*Math.sin(Math.PI/6));
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(0,0,s*0.3,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=g; ctx.beginPath(); for(let i=0;i<5;i++){ const a=i*Math.PI*2/5; ctx.lineTo(Math.cos(a)*s,Math.sin(a)*s); ctx.lineTo(Math.cos(a+Math.PI/5)*s*0.5,Math.sin(a+Math.PI/5)*s*0.5); } ctx.closePath(); ctx.fill();
     ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
   }
-
+  function drawPizza(p){
+    const x=p.x, y=p.y, s=p.size;
+    ctx.save(); ctx.translate(x,y); ctx.rotate((performance.now()-p.t0)/800);
+    ctx.fillStyle='#c68642'; ctx.beginPath(); ctx.arc(0,0,s,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#f6d56b'; ctx.beginPath(); ctx.arc(0,0,s*0.82,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#b54a3a';
+    for (let i=0;i<6;i++){ const a=i*Math.PI/3; ctx.beginPath(); ctx.arc(Math.cos(a)*s*0.45,Math.sin(a)*s*0.45,s*0.18,0,Math.PI*2); ctx.fill(); }
+    ctx.restore();
+  }
   function drawParticle(p){ ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); }
 
+  // Popups
   function showScorePopup(x,y,text){
-    const div = document.createElement('div'); div.className='score-pop'; div.textContent=text; div.style.position='absolute';
-    positionPopup(div, x, y);
-    document.querySelector('.hud').appendChild(div); setTimeout(()=>{div.remove();},1000);
+    const div = document.createElement('div'); div.className='score-pop'; div.textContent=text;
+    // position relative to canvas
+    const rect = canvas.getBoundingClientRect();
+    const px = rect.left + (x/W)*rect.width, py = rect.top + (y/H)*rect.height;
+    div.style.left = px+'px'; div.style.top = py+'px'; div.style.position='fixed';
+    document.body.appendChild(div); setTimeout(()=>div.remove(),1000);
   }
   function showWarnPopup(x,y){
-    const div = document.createElement('div'); div.className='warn-pop'; div.textContent='Warning!'; div.style.position='absolute';
-    positionPopup(div, x, y);
-    document.querySelector('.hud').appendChild(div); setTimeout(()=>{div.remove();},1500);
+    const div = document.createElement('div'); div.className='warn-pop'; div.textContent='⚠';
+    const rect = canvas.getBoundingClientRect();
+    const px = rect.left + (x/W)*rect.width, py = rect.top + (y/H)*rect.height;
+    div.style.left = (px-12)+'px'; div.style.top = (py-12)+'px'; div.style.position='fixed';
+    document.body.appendChild(div); setTimeout(()=>div.remove(),1500);
   }
 
-  // Fullscreen / Pause / Restart
-  async function toggleFullscreen(){ try{ if(!document.fullscreenElement){ await container.requestFullscreen({navigationUI:'hide'}); } else { await document.exitFullscreen(); } }catch(e){} }
-  function togglePause(){ if(!state.running||state.over) return; state.paused = !state.paused; ui.btnPause.textContent = state.paused ? 'Resume' : 'Pause'; }
-  function restart(changeChar=false){
+  // Helpers: collisions
+  function hitTestShotVsTarget(s,t){ const dx=s.x-t.x, dy=s.y-t.y; const r = (t.w? t.w/2 : 20) + s.r; return dx*dx+dy*dy <= r*r; }
+  function shotHitsPickup(s, p){
+    const dx = s.x - p.x, dy = s.y - p.y;
+    const rr = (s.r + p.size) * (s.r + p.size);
+    return dx*dx + dy*dy <= rr;
+  }
+
+  // UI buttons
+  function toggleFullscreen(){ if(!document.fullscreenElement){ container.requestFullscreen(); } else { document.exitFullscreen(); } }
+  function togglePause(){
+    if(!state.running||state.over) return;
+    state.paused = !state.paused;
+    ui.btnPause.textContent = state.paused ? 'Resume' : 'Pause';
+    if(!state.paused){ state.lastTime=performance.now(); requestAnimationFrame(update); if(state.musicOn) startMusic(); }
+    else { stopMusic(); }
+  }
+  function showTitle(){
+    setOverlay(`
+      <div class="card" style="text-align:center">
+        <h2>Backroom Bratzz Deluxe</h2>
+        <div>High Score: <strong>${state.highScore}</strong> • High Streak: <strong>${state.highStreak}</strong></div>
+        <div class="choose" style="margin-top:12px">
+          <button class="charBtn" data-name="Alex"><div class="mini"></div><h3>Alex</h3><p>Rapid Fire</p></button>
+          <button class="charBtn" data-name="Riley-L"><div class="mini"></div><h3>Riley-L</h3><p>Spread Shot</p></button>
+          ${state.ninjaUnlocked ? `<button class="charBtn" data-name="Ninja"><div class="mini"></div><h3>Ninja</h3><p>Ninja Stars</p></button>` : ``}
+        </div>
+        <div style="opacity:.95;margin-top:10px">Tap a character, then press <em>Start</em> or click the arena.</div>
+      </div>`);
+    // attach listeners AFTER overlay exists
+    overlay.querySelectorAll('.charBtn').forEach(btn =>
+      btn.addEventListener('click', () => choosePlayer(btn.dataset.name))
+    );
+  }
+  function choosePlayer(name){
+    state.player = {name};
+    ui.btnStart.classList.remove('disabled');
+    setOverlay(`
+      <div class="card" style="text-align:center">
+        <div style="font-size:18px;margin-bottom:10px">You chose <strong>${name}</strong></div>
+        <button class="btn accent" id="go">Start Game</button>
+      </div>`);
+    overlay.querySelector('#go').addEventListener('click', start);
+  }
+
+  function restart(){
     stopMusic();
     state.running=false; state.paused=false; state.over=false;
     state.level=1; state.timeLeft=60; state.score=0; state.streak=0; state.bestStreak=0; state.combo=1;
     state.reaHits=0; state.shots=[]; state.targets=[]; state.particles=[]; state.powerups=[]; state.pizzas=[];
     state.lastSpawn=0; state.spawnEvery=[500,1000]; state.lastTime=0; state.difficulty=1;
-    state.lastPowerup=0; state.powerupEvery=[4000,7000];
+    state.lastPowerup=0; state.powerupEvery=[3000,6000];
     state.lastManager=0; state.managerEvery=[8000,12000];
-    state.lastPizza=0; state.pizzaEvery=[5000,9000];
-    state.doubleComboEnd=0; state.pizzaCount=0;
-    state.power={kind:'none', end:0};
-    state.jaxonHits=0; state.jaxonDoubleEnd=0; state.jaxonDoubleSoundTimer=0;
-    state.shield=0;
+    state.lastPizza=0; state.pizzaEvery=[4000,7000];
+    state.doubleComboEnd=0; state.pizzaCount=0; state.shield=0;
+    state.jaxonDoubleEnd=0; state.jaxonDoubleSoundTimer=0;
+    // keep ninjaUnlocked across restarts in this session
+    state.power.kind='none'; state.power.end=0;
+    // DO NOT force player to Ninja: only Ninja if user selects it
+    // keep previous character selection? We’ll require reselect:
+    state.player=null;
 
     ui.score.textContent=state.score; ui.level.textContent=state.level; ui.time.textContent=state.timeLeft.toFixed(1);
     ui.streak.textContent=state.streak; ui.combo.textContent=`${state.combo}x`; ui.warnings.textContent=`${state.reaHits}/3`;
     ui.pizza.textContent=`${state.pizzaCount}/3`; ui.power.textContent='None';
-
-    if(changeChar){ showTitle(); } else {
-      setOverlay('');
-      start(); // quick restart as same character
-    }
-  }
-
-  // Title / Choose / Start
-  function showTitle(){
-    setOverlay(`
-      <div class="card" style="text-align:center">
-        <h2>Backroom Bratzz Deluxe</h2>
-        <div style="opacity:.9;margin-bottom:10px">Choose your character to begin.</div>
-        <div class="choose">
-          <button class="charBtn" data-name="Alex"><strong>Alex</strong><div style="color:var(--muted)">🍕 Rapid Fire</div></button>
-          <button class="charBtn" data-name="Riley-L"><strong>Riley-L</strong><div style="color:var(--muted)">🍕 Spread Shot</div></button>
-        </div>
-        <div style="margin-top:14px">
-          <button class="btn accent" id="go">Start</button>
-        </div>
-      </div>
-    `);
-    overlay.querySelectorAll('.charBtn').forEach(btn => btn.addEventListener('click', () => choosePlayer(btn.dataset.name)));
-    overlay.querySelector('#go').addEventListener('click', ()=>{
-      if(!state.player){ state.player = { name:'Alex' }; }
-      setOverlay('');
-      start();
-    });
-  }
-
-  function choosePlayer(name){
-    state.player = {name};
-    updatePowerTimer();
-    const go = overlay.querySelector('#go');
-    if (go) go.textContent = 'Start as ' + name;
+    ui.btnPause.textContent='Pause';
+    showTitle();
   }
 
   function start(){
-    if(!state.player){ state.player = { name:'Alex' }; }
+    if(!state.player){ showTitle(); return; }
     state.running=true; state.paused=false; state.over=false;
+    state.timeLeft = 60;
     state.lastTime=performance.now();
-    if(state.musicOn && !state.muted) startMusic();
+    setOverlay('');
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    if (state.musicOn) startMusic();
     requestAnimationFrame(update);
   }
-  function update(nowTs){
-    if(!state.running||state.paused||state.over) return;
+  // Main loop
+  let dtms=0;
+  function update(){
+    if(!state.running || state.paused || state.over) return;
     const now = performance.now();
     dtms = Math.min(33, now - state.lastTime); state.lastTime = now;
-    const dt = dtms/1000;
 
-    // Time + Level
-    state.timeLeft = Math.max(0, state.timeLeft - dt);
+    // timers & difficulty
+    state.timeLeft = Math.max(0, state.timeLeft - dtms/1000);
     const nextLevelScore = state.level * 1000;
     if(state.score >= nextLevelScore && state.level < 10){
-      state.level++; state.difficulty *= 1.2; state.timeLeft += 10; playSound('levelUp');
-      showScorePopup(W*0.5, H*0.25, `Level ${state.level}!`); ui.level.textContent = state.level;
+      state.level++;
+      state.difficulty *= 1.2;
+      state.timeLeft += 10;
+      playSound('levelUp');
+      showScorePopup(W*0.5, H*0.25, `Level ${state.level}!`);
+      ui.level.textContent = state.level;
     }
 
-    // Spawns
+    // Spawns (no extra random gates; timings already randomized)
     if(now - state.lastSpawn > rand(state.spawnEvery[0],state.spawnEvery[1])/state.difficulty){
       spawnTarget(randi(0,9)<8?'bald':'manager');
       state.lastSpawn = now;
     }
-    if(now - state.lastManager > rand(state.managerEvery[0],state.managerEvery[1])/state.difficulty && randi(0,4)===0){
-      spawnTarget('jaxon'); state.lastManager = now;
+    if(now - state.lastManager > rand(state.managerEvery[0],state.managerEvery[1])/state.difficulty){
+      spawnTarget('jaxon');
+      state.lastManager = now;
     }
-    if(now - state.lastPowerup > rand(state.powerupEvery[0],state.powerupEvery[1])/state.difficulty && randi(0,3)===0){
-      spawnPowerup(); state.lastPowerup = now;
+    if(now - state.lastPowerup > rand(state.powerupEvery[0],state.powerupEvery[1])/state.difficulty){
+      spawnPowerup();
+      state.lastPowerup = now;
     }
-    if(now - state.lastPizza > rand(state.pizzaEvery[0],state.pizzaEvery[1])/state.difficulty && randi(0,4)===0){
-      spawnPizza(); state.lastPizza = now;
+    if(now - state.lastPizza > rand(state.pizzaEvery[0],state.pizzaEvery[1])/state.difficulty){
+      spawnPizza();
+      state.lastPizza = now;
     }
 
-    // Autofire
+    // Auto-fire
     if(settings.autoFire && state.autoFireDown){ attemptShoot(); }
 
-    // Move Jaxon and trail
-    for(const t of state.targets){
-      if(t.type === 'jaxon'){
-        t.x += t.vx * dt;
-        t.life -= dtms;
-        jaxonTrail(t.x, t.y, t.vx);
-        if(t.x < -50 || t.x > W + 50) t._expired = true;
-      } else {
-        t.popT += dtms;
-        t.life -= dtms;
-        if(t.life <= 0) t._expired = true;
-      }
+    // Shots
+    for(let i=state.shots.length-1;i>=0;i--){
+      const s=state.shots[i]; s.x+=s.vx*dtms/1000; s.y+=s.vy*dtms/1000; s.age+=dtms;
+      if(s.x< -20||s.x>W+20||s.y< -20||s.y>H+20||s.age>2000){ state.shots.splice(i,1); continue; }
     }
 
-    // Shots
-    for(const s of state.shots){ s.x+=s.vx*dt; s.y+=s.vy*dt; s.age+=dtms; if(s.x<-20||s.x>W+20||s.y<-20||s.y>H+20||s.age>2000) s.alive=false; }
-
-    // Collisions: shots vs targets
+    // Targets (movement + aging)
     for(let i=state.targets.length-1;i>=0;i--){
       const t=state.targets[i];
-      if(t._expired) { state.targets.splice(i,1); continue; }
-      for(let j=state.shots.length-1;j>=0;j--){
-        const s=state.shots[j]; if(!s.alive) continue;
-        const dx=t.x-s.x, dy=t.y-s.y, dist2=dx*dx+dy*dy, R=(t.w/2 + s.r), R2=R*R;
-        if(dist2 <= R2){
-          s.alive=false;
-          if (t.type === 'bald') {
-            const mult = (now < state.doubleComboEnd ? 2 : 1);
-            const points = Math.floor(10 * mult);
-            state.score += points; state.streak += 1; state.bestStreak = Math.max(state.bestStreak, state.streak);
-            if(state.streak % 5 === 0){ state.combo = Math.min(5, state.combo + 1); state.doubleComboEnd = now + 5000; }
-            ui.score.textContent=state.score; ui.streak.textContent=state.streak; ui.combo.textContent=`${state.combo}x`;
-            burst(t.x,t.y,'#5ca3ff'); showScorePopup(t.x, t.y-20, `+${points}`); playSound('hit');
-            t._expired = true;
-          } else if (t.type === 'manager') {
+      if(t.type==='jaxon'){
+        t.x += t.vx * dtms/1000; t.life -= dtms;
+        jaxonTrail(t.x, t.y, t.vx);
+        if(t.x<-40||t.x>W+40 || t.life<=0){ state.targets.splice(i,1); }
+      } else {
+        t.life -= dtms; t.popT += dtms;
+        if(t.life<=0){ state.targets.splice(i,1); }
+      }
+    }
+
+    // Shot collisions vs targets + pickups (shoot-to-collect)
+    for(let j=state.shots.length-1;j>=0;j--){
+      const s = state.shots[j];
+      let used = false;
+
+      // A) vs targets
+      for(let i=state.targets.length-1;i>=0 && !used;i--){
+        const t = state.targets[i];
+        if(hitTestShotVsTarget(s,t)){
+          // consume shot
+          state.shots.splice(j,1); used = true;
+
+          if(t.type==='bald'){
+            const mult = (now < state.doubleComboEnd ? 2 : 1) * (now < state.jaxonDoubleEnd ? 2 : 1);
+            const points = Math.floor(1 * state.combo * mult);
+            state.score += points;
+            state.streak++; state.bestStreak=Math.max(state.bestStreak,state.streak);
+            state.combo = Math.min(5, state.combo + 0.25);
+            ui.score.textContent=state.score; ui.streak.textContent=state.streak; ui.combo.textContent=`${state.combo.toFixed(2)}x`;
+            burst(t.x,t.y,'#5ca3ff', 16); showScorePopup(t.x, t.y-20, `+${points}`); playSound('hit');
+            state.targets.splice(i,1);
+          } else if(t.type==='manager'){
+            // shield first
             if(state.shield > 0){
-              state.shield--; showWarnPopup(t.x,t.y); playSound('shield'); t._expired = true;
-            } else {
-              state.reaHits++; ui.warnings.textContent=`${state.reaHits}/3`; showWarnPopup(t.x,t.y); playSound('manager');
-              if(state.reaHits>=3){
-                state.over=true; state.running=false; playSound('fired');
-                gameOver('fired');
-              }
-              t._expired = true;
-            }
-          } else if (t.type === 'jaxon') {
-            t.hitCount = (t.hitCount || 0) + 1;
-            burst(t.x,t.y,'#ffd700'); showScorePopup(t.x,t.y-20, `Jaxon Hit ${t.hitCount}/3`); playSound('hit');
-            if(t.hitCount >= 3){
-              // Unlock Ninja immediately (this game only)
+              state.shield--;
+              showWarnPopup(t.x, t.y);
+              playSound('shield');
               state.targets.splice(i,1);
-              if (!state.player || state.player.name !== 'Ninja') {
-                state.player = { name: 'Ninja' };
-                state.power.kind = 'ninja';
-                showScorePopup(W*0.5, H*0.25, 'Ninja Unlocked!');
-                updatePowerTimer();
+            } else {
+              state.reaHits++; ui.warnings.textContent=`${state.reaHits}/3`;
+              burst(t.x,t.y,'#ff3838', 24, 350); showWarnPopup(t.x, t.y); playSound('manager');
+              state.targets.splice(i,1);
+              if (state.reaHits >= 3) {
+                state.over=true; state.running=false; playSound('fired');
+                stopMusic();
+                const bestScore = Math.max(state.highScore, state.score);
+                if (state.score > state.highScore) localStorage.setItem('bratzzHighScore', state.score);
+                if (state.bestStreak > state.highStreak) localStorage.setItem('bratzzHighStreak', state.bestStreak);
+                setOverlay(`<div class="card" style="text-align:center">
+                  <h3>You're Fired!</h3>
+                  <div style="margin-bottom:10px">Score: <strong>${state.score}</strong> • Best Streak: <strong>${state.bestStreak}</strong> • High Score: <strong>${bestScore}</strong></div>
+                  <div class="row" style="justify-content:center;margin-top:8px">
+                    <button class="btn accent" id="again">Play Again</button>
+                  </div>
+                </div>`);
+                overlay.querySelector('#again').addEventListener('click', restart);
               }
+            }
+          } else if(t.type==='jaxon'){
+            t.hitCount++; playSound('hit');
+            burst(t.x,t.y,'#ffd700', 16, 300); showScorePopup(t.x, t.y-20, `Jaxon ${t.hitCount}/3`);
+            if(t.hitCount>=3){
+              // unlock ninja for remainder of session
+              state.ninjaUnlocked = true;
+              state.jaxonDoubleEnd = now + 5000;
+              showScorePopup(W*0.5, H*0.25, 'Jaxon Bonus: 2x!');
+              state.targets.splice(i,1);
             }
           }
-          break;
         }
       }
-    }
-    state.shots = state.shots.filter(s=>s.alive);
-    state.targets = state.targets.filter(t=>!t._expired);
-    // --- Collisions: SHOTS vs POWERUPS (stars) & PIZZAS ---
-    // Let players collect stars/pizzas by shooting them (since the player doesn't move).
-    for (let sj = state.shots.length - 1; sj >= 0; sj--) {
-      const s = state.shots[sj];
 
-      // Stars / powerups
-      for (let i = state.powerups.length - 1; i >= 0; i--) {
-        const p = state.powerups[i];
-        const dx = s.x - p.x, dy = s.y - p.y;
-        const R = s.r + p.size;
-        if (dx*dx + dy*dy <= R*R) {
-          // collect star via shot
-          state.powerups.splice(i, 1);
-          state.shots.splice(sj, 1); // consume this shot
-          playSound('powerup');
+      // B) vs stars (powerups)
+      for (let k=state.powerups.length-1;k>=0 && !used;k--){
+        const p = state.powerups[k];
+        if(p.collected || now - p.t0 > p.life) continue;
+        if(shotHitsPickup(s,p)){
+          p.collected = true;
+          state.powerups.splice(k,1);
+          state.shots.splice(j,1); used = true;
 
-          const now = performance.now();
-          if (p.type === 0)      { state.score += 50; showScorePopup(p.x, p.y, '+50'); }
-          else if (p.type === 1) { state.streak += 5; showScorePopup(p.x, p.y, '+5 Streak'); }
-          else if (p.type === 2) { state.combo = 2; state.doubleComboEnd = now + 5000; showScorePopup(p.x, p.y, '2x Combo 5s!'); }
+          if (p.type === 0) { state.timeLeft += 5; showScorePopup(p.x, p.y, '+5s'); }
+          else if (p.type === 1) { state.score += Math.round(10*state.combo * (now < state.jaxonDoubleEnd ? 2 : 1)); ui.score.textContent=state.score; showScorePopup(p.x, p.y, '+10'); }
+          else if (p.type === 2) { state.doubleComboEnd = now + 5000; showScorePopup(p.x, p.y, 'Double Combo!'); }
           else if (p.type === 3) { state.shield = 3; showScorePopup(p.x, p.y, 'Shield 3x!'); playSound('shield'); }
-
-          ui.score.textContent  = state.score;
-          ui.streak.textContent = state.streak;
-          ui.combo.textContent  = `${state.combo}x`;
-          // move to next shot (we already removed this one)
-          break;
+          burst(p.x,p.y,p.color || '#5ca3ff', 20, 300); playSound('powerup');
         }
       }
-      // If shot was removed above, skip pizza check for this sj index (it now points to the next shot)
-      if (sj >= state.shots.length) continue;
 
-      // Pizzas
-      for (let i = state.pizzas.length - 1; i >= 0; i--) {
-        const pz = state.pizzas[i];
-        const dx = s.x - pz.x, dy = s.y - pz.y;
-        const R = s.r + pz.size;
-        if (dx*dx + dy*dy <= R*R) {
-          state.pizzas.splice(i, 1);
-          state.shots.splice(sj, 1); // consume this shot
-          givePizza();
-          break;
+      // C) vs pizzas
+      for (let k=state.pizzas.length-1;k>=0 && !used;k--){
+        const z = state.pizzas[k];
+        if(z.collected || now - z.t0 > z.life) continue;
+        if(shotHitsPickup(s,z)){
+          z.collected = true;
+          state.pizzas.splice(k,1);
+          state.shots.splice(j,1); used = true;
+
+          if (state.player?.name === 'Ninja') {
+            state.score += 10; ui.score.textContent = state.score; showScorePopup(z.x, z.y, '+10');
+          } else {
+            givePizza(); showScorePopup(z.x, z.y, '+🍕');
+          }
+          burst(z.x,z.y,'#ffca38', 20, 300); playSound('powerup');
         }
       }
     }
 
-    // Powerups collected by proximity to player
-    const px=W/2, py=H*0.86;
-    for(let i=state.powerups.length-1;i>=0;i--){
-      const p=state.powerups[i]; p.life-=dtms; if(p.life<=0){ state.powerups.splice(i,1); continue; }
-      const dx=p.x-px, dy=p.y-py, rr=(50+p.size); if(dx*dx+dy*dy <= rr*rr){
-        state.powerups.splice(i,1); playSound('powerup');
-        if(p.type===0){ state.score+=50; showScorePopup(p.x,p.y,'+50'); }
-        else if(p.type===1){ state.streak+=5; showScorePopup(p.x,p.y,'+5 Streak'); }
-        else if(p.type===2){ state.combo=2; state.doubleComboEnd=now+5000; showScorePopup(p.x,p.y,'2x Combo 5s!'); }
-        else if(p.type===3){ state.shield = 3; showScorePopup(p.x, p.y, 'Shield 3x!'); playSound('shield'); }
-        ui.score.textContent=state.score; ui.streak.textContent=state.streak; ui.combo.textContent=`${state.combo}x`;
-      }
-    }
-
-    // Pizzas
-    for(let i=state.pizzas.length-1;i>=0;i--){
-      const p=state.pizzas[i]; p.life-=dtms; if(p.life<=0){ state.pizzas.splice(i,1); continue; }
-      const dx=p.x-px, dy=p.y-py, rr=(50+p.size); if(dx*dx+dy*dy <= rr*rr){
-        state.pizzas.splice(i,1); givePizza();
-      }
-    }
+    // Miss penalty (reset streak/combo if a bald times out)
+    // Already handled by life expiry → no direct penalty here beyond progress loss
 
     // Particles
     for(let i=state.particles.length-1;i>=0;i--){
-      const p=state.particles[i]; p.x+=p.vx*dt; p.y+=p.vy*dt; p.age+=dtms; p.vx*=0.96; p.vy=p.vy*0.96+380*dt;
+      const p=state.particles[i]; p.x+=p.vx*dtms/1000; p.y+=p.vy*dtms/1000; p.age+=dtms;
       if(p.age>=p.life) state.particles.splice(i,1);
     }
 
     // Combo timers
     if(state.doubleComboEnd>0 && now>state.doubleComboEnd){ state.combo=1; state.doubleComboEnd=0; ui.combo.textContent='1x'; }
+    if(state.jaxonDoubleEnd>0 && now>state.jaxonDoubleEnd){ state.jaxonDoubleEnd=0; if(state.combo>1){ state.combo=1; ui.combo.textContent='1x'; } }
+    if(state.jaxonDoubleEnd>0 && now-state.jaxonDoubleSoundTimer>1000){ playSound('jaxonDouble'); state.jaxonDoubleSoundTimer=now; }
 
-    // Power HUD
+    // Power timer
     updatePowerTimer();
 
     // Render
     const off = shake.offset();
     ctx.save(); ctx.translate(off.x, off.y);
     drawBackground();
-    state.shots.forEach(drawShot);
-    state.targets.forEach(drawTarget);
     state.powerups.forEach(drawPowerupStar);
     state.pizzas.forEach(drawPizza);
-    state.particles.forEach(drawParticle);
+    state.targets.forEach(drawTarget);
+    state.shots.forEach(drawShot);
     drawPlayer();
     ctx.restore();
 
-    // Clock + end
     ui.time.textContent = state.timeLeft.toFixed(1);
     if(state.timeLeft<=0){
       state.over=true; state.running=false;
-      localStorage.setItem('bratzzHighScore', Math.max(state.highScore, state.score));
-      localStorage.setItem('bratzzHighStreak', Math.max(state.highStreak, state.bestStreak));
-      gameOver('time');
       stopMusic();
+      const bestScore = Math.max(state.highScore, state.score);
+      if (state.score > state.highScore) localStorage.setItem('bratzzHighScore', state.score);
+      if (state.bestStreak > state.highStreak) localStorage.setItem('bratzzHighStreak', state.bestStreak);
+      setOverlay(`<div class="card" style="text-align:center">
+        <h3>Time's Up!</h3>
+        <div style="margin-bottom:10px">Score: <strong>${state.score}</strong> • Best Streak: <strong>${state.bestStreak}</strong> • High Score: <strong>${bestScore}</strong></div>
+        <div class="row" style="justify-content:center;margin-top:8px"><button class="btn accent" id="again">Play Again</button></div>
+      </div>`);
+      overlay.querySelector('#again').addEventListener('click', restart);
     } else {
       requestAnimationFrame(update);
     }
   }
 
-  function gameOver(reason){
-    const title = reason==='fired' ? "You're Fired!" : "Time's Up!";
-    setOverlay(`
-      <div class="card" style="text-align:center">
-        <h3>${title}</h3>
-        <div style="margin-bottom:10px">Score: <strong>${state.score}</strong> • Best Streak: <strong>${state.bestStreak}</strong></div>
-        <div>High Score: <strong>${Math.max(state.highScore, state.score)}</strong> • High Streak: <strong>${Math.max(state.highStreak, state.bestStreak)}</strong></div>
-        <div class="row" style="justify-content:center;margin-top:8px">
-          <button class="btn accent" id="again">Play Again</button>
-          <button class="btn" id="change">Change Character</button>
-        </div>
-      </div>
-    `);
-    const again = overlay.querySelector('#again');
-    const change = overlay.querySelector('#change');
-    if(again) again.addEventListener('click', ()=>restart(false));
-    if(change) change.addEventListener('click', ()=>{ state.player=null; restart(true); });
-  }
-
-  // Buttons / Settings
-  ui.btnStart.addEventListener('click', ()=>{ if(!state.running) { if(!state.player) showTitle(); else start(); } });
+  // UI listeners
+  ui.btnStart.addEventListener('click', start);
   ui.btnPause.addEventListener('click', togglePause);
-  ui.btnRestart.addEventListener('click', ()=>restart(false));
+  ui.btnRestart.addEventListener('click', restart);
   ui.btnFS.addEventListener('click', toggleFullscreen);
   ui.btnSettings.addEventListener('click', () => settingsDlg.showModal());
   ui.closeSettings.addEventListener('click', () => settingsDlg.close());
 
+  ui.btnMute.addEventListener('click', () => {
+    soundEnabled = !soundEnabled; // mute ALL sounds
+    ui.btnMute.textContent = soundEnabled ? 'Mute' : 'Unmute';
+    if (!soundEnabled) stopMusic(); else if (state.musicOn) startMusic();
+  });
+
   ui.autoFire.addEventListener('change', e => { settings.autoFire = e.target.checked; localStorage.setItem('bratzz_autoFire', settings.autoFire); });
   ui.hitboxes.addEventListener('change', e => { settings.hitboxes = e.target.checked; localStorage.setItem('bratzz_hitboxes', settings.hitboxes); });
   ui.hiContrast.addEventListener('change', e => { settings.hiContrast = e.target.checked; localStorage.setItem('bratzz_hiContrast', settings.hiContrast); document.body.classList.toggle('hi-contrast', settings.hiContrast); });
-  ui.musicOn.addEventListener('change', e => { settings.musicOn = e.target.checked; localStorage.setItem('bratzz_musicOn', settings.musicOn); state.musicOn=settings.musicOn; ui.btnMute.textContent = state.musicOn && !state.muted ? 'Mute All' : 'Unmute All'; if(state.running){ settings.musicOn && !state.muted ? startMusic() : stopMusic(); } });
+  ui.musicOn.addEventListener('change', e => {
+    settings.musicOn = e.target.checked; localStorage.setItem('bratzz_musicOn', settings.musicOn);
+    state.musicOn = settings.musicOn;
+    if(!state.musicOn) stopMusic(); else if(soundEnabled && state.running) startMusic();
+  });
   ui.sfxVol.addEventListener('input', e => { settings.sfxVol = parseFloat(e.target.value); localStorage.setItem('bratzz_sfxVol', settings.sfxVol); });
 
-  // Initial title
-  showTitle();
-})();
-</script>
+  // Start screen & quick click-to-start
+  function bootTitle(){
+    ui.btnStart.classList.add('disabled');
+    showTitle();
+  }
+  bootTitle();
+  document.getElementById('game').addEventListener('click', ()=>{
+    if(!state.running && !state.paused && !state.over){
+      if(!state.player){ showTitle(); return; }
+      start();
+    }
+  });
+})();</script>
 </body>
 </html>
