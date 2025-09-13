@@ -196,9 +196,9 @@
     timeLeft:60, score:0, streak:0, bestStreak:0, combo:1,
     reaHits:0, player:null, shots:[], targets:[], particles:[], powerups:[], pizzas:[],
     lastSpawn:0, spawnEvery:[500,1000], lastTime:0, difficulty:1,
-    lastPowerup:0, powerupEvery:[3000,6000],
+    lastPowerup:0, powerupEvery:[4500,9000], // Increased for less frequency
     lastManager:0, managerEvery:[8000,12000],
-    lastPizza:0, pizzaEvery:[4000,7000],
+    lastPizza:0, pizzaEvery:[6000,10500], // Increased for less frequency
     doubleComboEnd:0,
     highScore: +localStorage.getItem('bratzzHighScore') || 0,
     highStreak: +localStorage.getItem('bratzzHighStreak') || 0,
@@ -369,12 +369,12 @@
     const x=(lane+1)*laneW, baseY=H*0.55;
     const type=randi(0,3); // 0:+time,1:+score,2:double combo,3:shield
     const color = type===2 ? '#5ca3ff' : (type===3 ? '#00ff00' : '#ff5c5c');
-    state.powerups.push({x, y:baseY-40, size:18, life:2500, t0:performance.now(), collected:false, type, color});
+    state.powerups.push({x, y:baseY-40, vy:50, size:22, life:1250, t0:performance.now(), collected:false, type, color}); // Shorter life, larger size, added vy for drift
   }
   function spawnPizza(){
     const cols=9, lane=randi(0,cols-1), laneW=W/(cols+1);
     const x=(lane+1)*laneW, baseY=H*0.55;
-    state.pizzas.push({x, y:baseY-40, size:20, life:5500, t0:performance.now(), collected:false});
+    state.pizzas.push({x, y:baseY-40, vy:50, size:24, life:2750, t0:performance.now(), collected:false}); // Shorter life, larger size, added vy for drift
   }
 
   // Shooting
@@ -642,9 +642,9 @@
     state.level=1; state.timeLeft=60; state.score=0; state.streak=0; state.bestStreak=0; state.combo=1;
     state.reaHits=0; state.shots=[]; state.targets=[]; state.particles=[]; state.powerups=[]; state.pizzas=[];
     state.lastSpawn=0; state.spawnEvery=[500,1000]; state.lastTime=0; state.difficulty=1;
-    state.lastPowerup=0; state.powerupEvery=[3000,6000];
+    state.lastPowerup=0; state.powerupEvery=[4500,9000];
     state.lastManager=0; state.managerEvery=[8000,12000];
-    state.lastPizza=0; state.pizzaEvery=[4000,7000];
+    state.lastPizza=0; state.pizzaEvery=[6000,10500];
     state.doubleComboEnd=0; state.pizzaCount=0; state.shield=0;
     state.jaxonDoubleEnd=0; state.jaxonDoubleSoundTimer=0;
     // keep ninjaUnlocked across restarts in this session
@@ -727,6 +727,20 @@
         t.life -= dtms; t.popT += dtms;
         if(t.life<=0){ state.targets.splice(i,1); }
       }
+    }
+
+    // Powerups movement and aging
+    for(let i=state.powerups.length-1;i>=0;i--){
+      const p = state.powerups[i];
+      p.y += p.vy * dtms / 1000; // Added drift
+      if(now - p.t0 > p.life){ state.powerups.splice(i,1); continue; }
+    }
+
+    // Pizzas movement and aging
+    for(let i=state.pizzas.length-1;i>=0;i--){
+      const z = state.pizzas[i];
+      z.y += z.vy * dtms / 1000; // Added drift
+      if(now - z.t0 > z.life){ state.pizzas.splice(i,1); continue; }
     }
 
     // Shot collisions vs targets + pickups (shoot-to-collect)
