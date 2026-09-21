@@ -26,6 +26,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
+    icon=str(root / "assets" / "icons" / "backroom_bratzz.ico"),
 )
 coll = COLLECT(
     exe,

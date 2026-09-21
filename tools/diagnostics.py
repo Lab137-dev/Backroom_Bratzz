@@ -29,6 +29,8 @@ def main() -> int:
         errors.append(f"Missing images: {', '.join(sorted(missing))}")
     if not bank.font_path.exists():
         errors.append("Bundled font is missing")
+    if not (ASSETS / "icons" / "backroom_bratzz.ico").exists():
+        errors.append("Windows application icon is missing")
     for track in ("shift_theme.wav", "jazzy_rush.wav", "riley_slow.wav"):
         if not (ASSETS / "music" / track).exists():
             errors.append(f"Missing music track: {track}")

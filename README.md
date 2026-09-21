@@ -127,6 +127,26 @@ pyinstaller packaging/backroom_bratzz.spec --noconfirm
 
 The packaged game will be written to `dist/BackroomBratzz/`. The GitHub Actions Windows workflow also creates a downloadable build artifact.
 
+## Build the Windows installer
+
+The repository includes an [Inno Setup](https://jrsoftware.org/isinfo.php) installer definition. After building with PyInstaller, compile it on Windows:
+
+```powershell
+choco install innosetup -y
+& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" packaging\installer.iss
+```
+
+The resulting `dist/installer/BackroomBratzz-Setup.exe` installs the game for the current Windows user, creates a Start Menu entry, optionally creates a desktop shortcut, and registers a standard Windows uninstaller. Administrator privileges are not required.
+
+The `Build Windows Game` GitHub Actions workflow automatically produces both:
+
+- `BackroomBratzz-Portable.zip`
+- `BackroomBratzz-Setup.exe`
+
+Running that workflow manually creates a downloadable Actions artifact. Pushing a version tag such as `v2.0.0` additionally creates a GitHub Release and attaches both files.
+
+Unsigned test builds may display a Windows SmartScreen “unknown publisher” warning. Removing that warning requires a trusted code-signing certificate.
+
 ## Credits and licensing
 
 Game design, code, original sprites, sound effects, and three-state disco soundtrack: **Danny Morgan / LAB-137**.

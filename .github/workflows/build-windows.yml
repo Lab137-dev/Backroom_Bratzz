@@ -1,7 +1,11 @@
 name: Build Windows Game
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
+  pull_request:
   push:
     tags: ["v*"]
 
@@ -16,8 +20,31 @@ jobs:
           cache: pip
       - run: pip install -r requirements-dev.txt
       - run: pyinstaller packaging/backroom_bratzz.spec --noconfirm
+      - name: Create portable ZIP
+        shell: pwsh
+        run: Compress-Archive -Path dist/BackroomBratzz/* -DestinationPath dist/BackroomBratzz-Portable.zip -Force
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $version = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}".TrimStart("v") } else { "2.0.0" }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$version" packaging/installer.iss
       - uses: actions/upload-artifact@v4
         with:
-          name: BackroomBratzz-Windows
-          path: dist/BackroomBratzz/
-
+          name: BackroomBratzz-Windows-${{ github.run_number }}
+          path: |
+            dist/BackroomBratzz-Portable.zip
+            dist/installer/BackroomBratzz-Setup.exe
+      - name: Publish tagged release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          gh release create "${{ github.ref_name }}" `
+            dist/BackroomBratzz-Portable.zip `
+            dist/installer/BackroomBratzz-Setup.exe `
+            --generate-notes `
+            --title "Backroom Bratzz ${{ github.ref_name }}"

@@ -120,7 +120,7 @@ def draw_star(d: ImageDraw.ImageDraw) -> None:
 
 
 def main() -> None:
-    for folder in ("images", "sounds", "music", "fonts", "levels"):
+    for folder in ("images", "icons", "sounds", "music", "fonts", "levels"):
         (ASSETS / folder).mkdir(parents=True, exist_ok=True)
 
     bg = Image.new("RGB", (960, 600), "#091125")
@@ -141,6 +141,14 @@ def main() -> None:
     ld.rounded_rectangle((4, 4, 616, 111), 24, fill="#121d39", outline="#4b9cff", width=5)
     ld.text((310, 56), "BACKROOM BRATZZ", anchor="mm", font=font(44), fill="#f4f7ff", stroke_width=2, stroke_fill="#326ec4")
     logo.save(ASSETS / "images" / "logo.png")
+
+    app_icon = Image.new("RGBA", (256, 256), "#091125")
+    icon_draw = ImageDraw.Draw(app_icon)
+    icon_draw.rounded_rectangle((10, 10, 246, 246), 48, fill="#14234a", outline="#4b9cff", width=12)
+    icon_draw.polygon([(128, 26), (154, 95), (228, 98), (170, 143), (188, 218), (128, 176), (68, 218), (86, 143), (28, 98), (102, 95)], fill="#ffc53e")
+    icon_draw.text((128, 128), "BB", anchor="mm", font=font(72), fill="#091125")
+    app_icon.save(ASSETS / "icons" / "backroom_bratzz.ico", sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+    app_icon.save(ASSETS / "icons" / "backroom_bratzz.png")
 
     save_character("alex", "#f28a63", "#19151a", "long_straight")
     save_character("riley_l", "#ad70f6", "#211820", "long_wavy")
