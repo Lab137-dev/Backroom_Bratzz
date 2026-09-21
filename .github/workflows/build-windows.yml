@@ -1,0 +1,23 @@
+name: Build Windows Game
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: pyinstaller packaging/backroom_bratzz.spec --noconfirm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BackroomBratzz-Windows
+          path: dist/BackroomBratzz/
+
