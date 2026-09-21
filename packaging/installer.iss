@@ -17,7 +17,7 @@ DisableProgramGroupPage=yes
 OutputDir=..\dist\installer
 OutputBaseFilename=BackroomBratzz-Setup
 SetupIconFile=..\assets\icons\backroom_bratzz.ico
-UninstallDisplayIcon={app}\{#MyAppExeName}
+UninstallDisplayIcon={app}\BackroomBratzz.ico
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
@@ -39,11 +39,11 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 
 [Files]
 Source: "..\dist\BackroomBratzz\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\assets\icons\backroom_bratzz.ico"; DestDir: "{app}"; DestName: "BackroomBratzz.ico"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Backroom Bratzz: Boss Shift"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\Backroom Bratzz: Boss Shift"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{group}\Backroom Bratzz: Boss Shift"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\BackroomBratzz.ico"
+Name: "{autodesktop}\Backroom Bratzz: Boss Shift"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\BackroomBratzz.ico"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch Backroom Bratzz: Boss Shift"; Flags: nowait postinstall skipifsilent
-
