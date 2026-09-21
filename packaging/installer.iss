@@ -5,6 +5,7 @@
 #define MyAppName "Backroom Bratzz: Boss Shift"
 #define MyAppPublisher "Danny Morgan / LAB-137"
 #define MyAppExeName "BackroomBratzz.exe"
+#define MyShortcutName "Backroom Bratzz - Boss Shift"
 
 [Setup]
 AppId={{7D3A870F-6EBD-4A80-9B6B-5D2DBD01137B}
@@ -17,7 +18,7 @@ DisableProgramGroupPage=yes
 OutputDir=..\dist\installer
 OutputBaseFilename=BackroomBratzz-Setup
 SetupIconFile=..\assets\icons\backroom_bratzz.ico
-UninstallDisplayIcon={app}\BackroomBratzz.ico
+UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
@@ -35,15 +36,14 @@ VersionInfoProductVersion={#MyAppVersion}
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
+Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional shortcuts:"
 
 [Files]
 Source: "..\dist\BackroomBratzz\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\assets\icons\backroom_bratzz.ico"; DestDir: "{app}"; DestName: "BackroomBratzz.ico"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Backroom Bratzz: Boss Shift"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\BackroomBratzz.ico"
-Name: "{autodesktop}\Backroom Bratzz: Boss Shift"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\BackroomBratzz.ico"; Tasks: desktopicon
+Name: "{group}\{#MyShortcutName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{autodesktop}\{#MyShortcutName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "Launch Backroom Bratzz: Boss Shift"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
