@@ -1,0 +1,10 @@
+{
+  "name": "Morning Unload",
+  "duration": 45,
+  "target_score": 450,
+  "spawn_interval": 1.15,
+  "manager_speed": 155,
+  "box_rate": 0.46,
+  "palette": "blue"
+}
+

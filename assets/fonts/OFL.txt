@@ -1,0 +1,6 @@
+DejaVu fonts are based on Bitstream Vera and distributed under a permissive
+license. The full DejaVu font license and attribution are available at:
+https://dejavu-fonts.github.io/License.html
+
+The bundled DejaVuSans-Bold.ttf is unmodified.
+
