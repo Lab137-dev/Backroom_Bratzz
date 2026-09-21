@@ -5,6 +5,11 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing release tag to upload the Windows files to"
+        required: false
+        default: "v2.0.0"
   pull_request:
   push:
     tags: ["v*"]
@@ -37,14 +42,22 @@ jobs:
           path: |
             dist/BackroomBratzz-Portable.zip
             dist/installer/BackroomBratzz-Setup.exe
-      - name: Publish tagged release
-        if: github.ref_type == 'tag'
+      - name: Publish Windows release files
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
         shell: pwsh
         run: |
-          gh release create "${{ github.ref_name }}" `
-            dist/BackroomBratzz-Portable.zip `
-            dist/installer/BackroomBratzz-Setup.exe `
-            --generate-notes `
-            --title "Backroom Bratzz ${{ github.ref_name }}"
+          if (gh release view "$env:RELEASE_TAG" 2>$null) {
+            gh release upload "$env:RELEASE_TAG" `
+              dist/BackroomBratzz-Portable.zip `
+              dist/installer/BackroomBratzz-Setup.exe `
+              --clobber
+          } else {
+            gh release create "$env:RELEASE_TAG" `
+              dist/BackroomBratzz-Portable.zip `
+              dist/installer/BackroomBratzz-Setup.exe `
+              --generate-notes `
+              --title "Backroom Bratzz $env:RELEASE_TAG"
+          }
