@@ -2,7 +2,7 @@
 
 An upgraded, modular Python edition of the original **Backroom Bratzz Deluxe** browser game.
 
-Choose Alex or Riley-L, fire rubber bands across an increasingly chaotic retail backroom, collect pizza power-ups, survive Rea-Rae's warnings, and defeat Jaxon to unlock Ninja. This edition expands the original joke into a structured Pygame project with multiple levels, persistent progress, original bundled assets, diagnostics, tests, Windows packaging, and automated builds.
+Choose Alex or Riley-L, fire rubber bands across an increasingly chaotic retail backroom, collect pizza power-ups, survive Rea-Rae's warnings, and defeat Jaxon to unlock Ninja. Watch out for Danny—the bald primary target occasionally fires back. This edition expands the original joke into a structured Pygame project with multiple levels, persistent progress, original bundled assets, diagnostics, tests, Windows packaging, and automated builds.
 
 > This is an independent fictional parody inspired by retail work. It is not affiliated with or endorsed by TJX, TJ Maxx, or any retailer.
 
@@ -50,9 +50,16 @@ Windows users can also double-click `launch_windows.bat`; it creates a local vir
 - **Riley-L** moves faster. Pizza Power changes the weapon into a three-way spread.
 - **Ninja** is permanently unlocked after defeating Jaxon and uses ninja stars.
 
+### Targets
+
+- **Danny** — bald with a grey goatee; the most frequent target and the only one who shoots back
+- **Rea-Rea** — short grey hair and glasses; defeating her generates a warning
+- **Jaxon** — light-brown hair and a baby-blue polo; defeat him to unlock Ninja
+
 ## Rules
 
 - Managers take multiple hits and award score.
+- Danny's return fire removes 100 points and resets the combo.
 - Defeating Rea-Rae generates a warning. Three warnings ends the shift.
 - Defeating Jaxon unlocks Ninja permanently.
 - Collect three pizzas to activate a seven-second character special.
@@ -117,7 +124,7 @@ The packaged game will be written to `dist/BackroomBratzz/`. The GitHub Actions 
 
 ## Credits and licensing
 
-Game design, code, original sprites, sound effects, and music: **Danny Morgan / LAB-137**.
+Game design, code, original sprites, sound effects, and disco soundtrack: **Danny Morgan / LAB-137**.
 
 See [assets/credits.md](assets/credits.md) for third-party asset attribution. Code and original LAB-137 assets are released under the [MIT License](LICENSE). The bundled DejaVu font retains its own license.
 

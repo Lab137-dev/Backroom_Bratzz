@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+import random
 import shutil
 import struct
 import wave
@@ -18,16 +19,32 @@ def font(size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(source, size)
 
 
-def save_character(name: str, shirt: str, hair: str, accessory: str = "") -> None:
+def save_character(name: str, shirt: str, hair: str, style: str = "short") -> None:
     image = Image.new("RGBA", (72, 88), (0, 0, 0, 0))
     d = ImageDraw.Draw(image)
+    if style in {"long_straight", "long_wavy"}:
+        d.rounded_rectangle((15, 8, 57, 72), 17, fill=hair, outline="#eef5ff", width=2)
+        if style == "long_wavy":
+            for y in range(34, 72, 10):
+                d.arc((10, y - 8, 27, y + 9), 270, 90, fill="#6c5149", width=3)
+                d.arc((45, y - 8, 62, y + 9), 90, 270, fill="#6c5149", width=3)
     d.rounded_rectangle((16, 38, 56, 82), 10, fill=shirt, outline="#eef5ff", width=3)
     d.ellipse((20, 8, 52, 43), fill="#d69a73", outline="#eef5ff", width=3)
-    d.pieslice((18, 2, 55, 36), 180, 360, fill=hair)
+    if style != "bald":
+        d.pieslice((18, 2, 55, 36), 180, 360, fill=hair)
+    if style == "short_grey_glasses":
+        d.rectangle((20, 8, 52, 17), fill="#b9bdc6")
+        d.rectangle((23, 20, 34, 29), outline="#303746", width=2)
+        d.rectangle((38, 20, 49, 29), outline="#303746", width=2)
+        d.line((34, 24, 38, 24), fill="#303746", width=2)
     d.ellipse((29, 22, 33, 26), fill="#132038")
     d.ellipse((41, 22, 45, 26), fill="#132038")
     d.arc((31, 24, 44, 35), 15, 165, fill="#8a3e42", width=2)
-    if accessory == "ninja":
+    if style == "bald":
+        d.arc((28, 27, 46, 46), 5, 175, fill="#90949c", width=3)
+        d.polygon([(31, 35), (43, 35), (40, 45), (34, 45)], fill="#8e9299")
+        d.arc((22, 5, 51, 38), 190, 350, fill="#efbf99", width=2)
+    if style == "ninja":
         d.rectangle((18, 15, 54, 31), fill="#171928")
         d.rectangle((26, 21, 47, 27), fill="#d69a73")
     image.save(ASSETS / "images" / f"{name}.png")
@@ -56,8 +73,46 @@ def tone(path: Path, notes: list[tuple[float, float]], volume: float = 0.3) -> N
 
 
 def music(path: Path) -> None:
-    melody = [110, 146.83, 164.81, 146.83, 123.47, 164.81, 196, 164.81] * 4
-    tone(path, [(note, 0.24) for note in melody], 0.12)
+    """Create a compact disco loop: four-on-the-floor kick, offbeat hats, bass, and stabs."""
+    rate, bpm, bars = 44100, 118, 6
+    beat = 60 / bpm
+    duration = bars * 4 * beat
+    rng = random.Random(137)
+    bass_notes = [55.0, 55.0, 65.41, 73.42, 55.0, 82.41, 73.42, 65.41]
+    chord_notes = [(220.0, 277.18, 329.63), (261.63, 329.63, 392.0)]
+    frames: list[bytes] = []
+    for i in range(int(rate * duration)):
+        t = i / rate
+        beat_pos = t % beat
+        half_pos = t % (beat / 2)
+        beat_index = int(t / beat)
+        eighth_index = int(t / (beat / 2))
+        kick = math.sin(2 * math.pi * (62 - 24 * min(beat_pos / 0.12, 1)) * t) * math.exp(-beat_pos * 20)
+        hat = (rng.random() * 2 - 1) * math.exp(-half_pos * 65) if eighth_index % 2 else 0
+        bass_freq = bass_notes[eighth_index % len(bass_notes)]
+        bass_phase = 2 * math.pi * bass_freq * t
+        bass = (math.sin(bass_phase) + 0.28 * math.sin(2 * bass_phase)) * 0.42
+        stab_age = (t - beat / 2) % beat
+        stab = 0.0
+        if stab_age < 0.13:
+            chord = chord_notes[(beat_index // 4) % 2]
+            stab = sum(math.sin(2 * math.pi * note * t) for note in chord) / 3 * math.exp(-stab_age * 18)
+        sample = 0.48 * kick + 0.12 * hat + 0.27 * bass + 0.18 * stab
+        frames.append(struct.pack("<h", int(max(-1, min(1, sample)) * 32767 * 0.72)))
+    with wave.open(str(path), "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(rate)
+        wav.writeframes(b"".join(frames))
+
+
+def draw_star(d: ImageDraw.ImageDraw) -> None:
+    points = []
+    for index in range(10):
+        angle = math.radians(-90 + index * 36)
+        radius = 17 if index % 2 == 0 else 7
+        points.append((20 + math.cos(angle) * radius, 20 + math.sin(angle) * radius))
+    d.polygon(points, fill="#ffd94a", outline="#fff5a3")
 
 
 def main() -> None:
@@ -83,17 +138,18 @@ def main() -> None:
     ld.text((310, 56), "BACKROOM BRATZZ", anchor="mm", font=font(44), fill="#f4f7ff", stroke_width=2, stroke_fill="#326ec4")
     logo.save(ASSETS / "images" / "logo.png")
 
-    save_character("alex", "#f28a63", "#43251f")
-    save_character("riley_l", "#ad70f6", "#e2c082")
+    save_character("alex", "#f28a63", "#19151a", "long_straight")
+    save_character("riley_l", "#ad70f6", "#211820", "long_wavy")
     save_character("ninja", "#303447", "#12131b", "ninja")
-    save_character("rea_rae", "#d34b62", "#251b1c")
-    save_character("jaxon", "#4c96d6", "#64402c")
-    save_character("supervisor", "#6d788e", "#353535")
+    save_character("danny", "#56657c", "#90949c", "bald")
+    save_character("rea_rae", "#d34b62", "#b9bdc6", "short_grey_glasses")
+    save_character("jaxon", "#87ceeb", "#9a6842", "short")
 
     icon("rubber_band", lambda d: d.ellipse((5, 14, 35, 26), outline="#64d9ff", width=5))
+    icon("enemy_rubber_band", lambda d: d.ellipse((5, 14, 35, 26), outline="#ff596f", width=5))
     icon("ninja_star", lambda d: d.polygon([(20, 2), (25, 14), (38, 20), (25, 25), (20, 38), (15, 25), (2, 20), (15, 14)], fill="#dfe8f7", outline="#65748e"))
     icon("pizza", lambda d: (d.polygon([(5, 34), (35, 34), (20, 4)], fill="#ffd55f", outline="#bc7134"), d.ellipse((17, 20, 23, 26), fill="#df4553")))
-    icon("star", lambda d: d.regular_polygon((20, 20, 17), 5, rotation=-18, fill="#ffd94a", outline="#fff5a3"))
+    icon("star", draw_star)
 
     tone(ASSETS / "sounds" / "shoot.wav", [(850, 0.055)], 0.2)
     tone(ASSETS / "sounds" / "hit.wav", [(220, 0.08), (130, 0.06)], 0.28)
@@ -110,4 +166,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

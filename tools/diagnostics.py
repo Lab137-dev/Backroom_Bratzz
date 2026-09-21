@@ -23,7 +23,7 @@ def main() -> int:
     except Exception as exc:
         errors.append(f"Asset load failed: {exc}")
 
-    required_images = {"alex", "riley_l", "ninja", "rea_rae", "jaxon", "supervisor", "rubber_band", "ninja_star", "pizza", "star", "background", "logo"}
+    required_images = {"alex", "riley_l", "ninja", "danny", "rea_rae", "jaxon", "rubber_band", "enemy_rubber_band", "ninja_star", "pizza", "star", "background", "logo"}
     missing = required_images.difference(bank.images)
     if missing:
         errors.append(f"Missing images: {', '.join(sorted(missing))}")

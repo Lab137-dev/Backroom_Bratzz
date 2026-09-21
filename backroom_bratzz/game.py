@@ -52,6 +52,7 @@ class Game:
         self.shake = 0.0
         self.player_group = pygame.sprite.GroupSingle()
         self.projectiles = pygame.sprite.Group()
+        self.enemy_projectiles = pygame.sprite.Group()
         self.managers = pygame.sprite.Group()
         self.pickups = pygame.sprite.Group()
 
@@ -67,6 +68,7 @@ class Game:
         self.player_group.empty()
         self.player_group.add(Player(self.assets.image(sprite), character))
         self.projectiles.empty()
+        self.enemy_projectiles.empty()
         self.managers.empty()
         self.pickups.empty()
         self.score = 0
@@ -142,7 +144,7 @@ class Game:
 
     def spawn_manager(self) -> None:
         roll = random.random()
-        kind = "rea_rae" if roll < 0.57 else "jaxon" if roll < 0.84 else "supervisor"
+        kind = "danny" if roll < 0.58 else "rea_rae" if roll < 0.82 else "jaxon"
         image = self.assets.image(kind)
         speed = self.level.manager_speed * (1.35 if kind == "jaxon" else 1.0)
         self.managers.add(Manager(image, kind, speed, random.randint(105, 390)))
@@ -153,6 +155,7 @@ class Game:
         keys = pygame.key.get_pressed()
         self.player_group.update(dt, keys)
         self.projectiles.update(dt)
+        self.enemy_projectiles.update(dt)
         self.managers.update(dt)
         self.pickups.update(dt)
 
@@ -164,6 +167,19 @@ class Game:
             if random.random() < self.level.box_rate:
                 kind = "pizza" if random.random() < 0.58 else "star"
                 self.pickups.add(Pickup(self.assets.image(kind), kind, random.randint(60, 900)))
+
+        player = self.player_group.sprite
+        if player:
+            for manager in self.managers:
+                if manager.kind == "danny" and manager.shot_clock <= 0:
+                    direction = pygame.Vector2(player.rect.center) - pygame.Vector2(manager.rect.center)
+                    if direction.length_squared():
+                        direction.scale_to_length(300)
+                    self.enemy_projectiles.add(
+                        Projectile(self.assets.image("enemy_rubber_band"), manager.rect.center, direction)
+                    )
+                    manager.reset_shot()
+                    self.assets.play("shoot", self.settings.sound_volume * 0.65)
 
         for manager in pygame.sprite.groupcollide(self.managers, self.projectiles, False, True):
             manager.hp -= 1
@@ -183,8 +199,13 @@ class Game:
                     self.assets.play("powerup", self.settings.sound_volume)
                 manager.kill()
 
-        player = self.player_group.sprite
         if player:
+            if pygame.sprite.spritecollide(player, self.enemy_projectiles, True):
+                self.score = max(0, self.score - 100)
+                self.combo = 0
+                self.flash("DANNY SHOT BACK!  -100", 1.2)
+                self.assets.play("warning", self.settings.sound_volume)
+                self.shake = 7.0
             for pickup in pygame.sprite.spritecollide(player, self.pickups, True):
                 if pickup.kind == "pizza":
                     self.pizzas += 1
@@ -245,7 +266,7 @@ class Game:
     def draw_playing(self) -> None:
         offset = (random.randint(-int(self.shake), int(self.shake)), 0) if self.shake else (0, 0)
         layer = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        for group in (self.pickups, self.managers, self.projectiles, self.player_group):
+        for group in (self.pickups, self.managers, self.projectiles, self.enemy_projectiles, self.player_group):
             group.draw(layer)
         self.screen.blit(layer, offset)
         remaining = max(0, int(self.level.duration - self.level_elapsed))
@@ -265,4 +286,3 @@ class Game:
         self.text("Press 1 or 2 to work another shift", self.font_medium, COLORS["gold"], (480, 380), True)
         if self.ninja_unlocked:
             self.text("Press 3 for Ninja", self.font_medium, COLORS["green"], (480, 422), True)
-

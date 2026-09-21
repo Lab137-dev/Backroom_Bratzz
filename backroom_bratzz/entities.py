@@ -47,22 +47,27 @@ class Manager(pygame.sprite.Sprite):
         super().__init__()
         self.image = image
         self.kind = kind
-        self.hp = 3 if kind in {"rea_rae", "jaxon"} else 1
+        self.hp = 3 if kind in {"rea_rae", "jaxon"} else 2
         self.max_hp = self.hp
-        self.value = 120 if kind == "jaxon" else 80
+        self.value = 120 if kind == "jaxon" else 100 if kind == "danny" else 80
         from_left = random.choice((True, False))
         self.rect = image.get_rect(midleft=(-image.get_width(), y)) if from_left else image.get_rect(midright=(960 + image.get_width(), y))
         self.pos = pygame.Vector2(self.rect.center)
         self.velocity = speed if from_left else -speed
         self.phase = random.random() * math.tau
+        self.shot_clock = random.uniform(1.4, 3.4) if kind == "danny" else 999.0
 
     def update(self, dt: float) -> None:
         self.phase += dt * 3
+        self.shot_clock -= dt
         self.pos.x += self.velocity * dt
         self.pos.y += math.sin(self.phase) * 18 * dt
         self.rect.center = self.pos
         if self.rect.right < -80 or self.rect.left > 1040:
             self.kill()
+
+    def reset_shot(self) -> None:
+        self.shot_clock = random.uniform(2.2, 4.8)
 
 
 class Pickup(pygame.sprite.Sprite):
@@ -78,4 +83,3 @@ class Pickup(pygame.sprite.Sprite):
         self.rect.center = self.pos
         if self.rect.top > 620:
             self.kill()
-
