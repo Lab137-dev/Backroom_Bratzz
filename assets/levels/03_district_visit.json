@@ -1,0 +1,10 @@
+{
+  "name": "District Visit",
+  "duration": 60,
+  "target_score": 2200,
+  "spawn_interval": 0.66,
+  "manager_speed": 235,
+  "box_rate": 0.61,
+  "palette": "red"
+}
+

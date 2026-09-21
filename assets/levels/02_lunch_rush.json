@@ -1,0 +1,10 @@
+{
+  "name": "Lunch Rush",
+  "duration": 50,
+  "target_score": 1100,
+  "spawn_interval": 0.88,
+  "manager_speed": 195,
+  "box_rate": 0.54,
+  "palette": "gold"
+}
+
