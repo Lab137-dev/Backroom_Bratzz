@@ -55,11 +55,16 @@ Windows users can also double-click `launch_windows.bat`; it creates a local vir
 - **Danny** — bald with a grey goatee; the most frequent target and the only one who shoots back
 - **Rea-Rea** — short grey hair and glasses; defeating her generates a warning
 - **Jaxon** — light-brown hair and a baby-blue polo; defeat him to unlock Ninja
+- **Jazzy** — a rare manager with curly brown hair and glasses; while she is visible, panic music takes over and the cast moves much faster
+- **Riley-Not-L** — a rare manager with long blond hair; while she is visible, the music and the entire game drop into slow motion
+
+Jazzy and Riley-Not-L are mutually exclusive and can never appear together.
 
 ## Rules
 
 - Managers take multiple hits and award score.
 - Danny's return fire removes 100 points and resets the combo.
+- Rare manager events temporarily replace the normal disco track and alter the pace of the whole game.
 - Defeating Rea-Rae generates a warning. Three warnings ends the shift.
 - Defeating Jaxon unlocks Ninja permanently.
 - Collect three pizzas to activate a seven-second character special.
@@ -124,7 +129,7 @@ The packaged game will be written to `dist/BackroomBratzz/`. The GitHub Actions 
 
 ## Credits and licensing
 
-Game design, code, original sprites, sound effects, and disco soundtrack: **Danny Morgan / LAB-137**.
+Game design, code, original sprites, sound effects, and three-state disco soundtrack: **Danny Morgan / LAB-137**.
 
 See [assets/credits.md](assets/credits.md) for third-party asset attribution. Code and original LAB-137 assets are released under the [MIT License](LICENSE). The bundled DejaVu font retains its own license.
 

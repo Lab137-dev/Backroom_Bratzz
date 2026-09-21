@@ -22,7 +22,7 @@ def font(size: int) -> ImageFont.FreeTypeFont:
 def save_character(name: str, shirt: str, hair: str, style: str = "short") -> None:
     image = Image.new("RGBA", (72, 88), (0, 0, 0, 0))
     d = ImageDraw.Draw(image)
-    if style in {"long_straight", "long_wavy"}:
+    if style in {"long_straight", "long_wavy", "long_blond"}:
         d.rounded_rectangle((15, 8, 57, 72), 17, fill=hair, outline="#eef5ff", width=2)
         if style == "long_wavy":
             for y in range(34, 72, 10):
@@ -32,8 +32,12 @@ def save_character(name: str, shirt: str, hair: str, style: str = "short") -> No
     d.ellipse((20, 8, 52, 43), fill="#d69a73", outline="#eef5ff", width=3)
     if style != "bald":
         d.pieslice((18, 2, 55, 36), 180, 360, fill=hair)
-    if style == "short_grey_glasses":
-        d.rectangle((20, 8, 52, 17), fill="#b9bdc6")
+    if style in {"short_grey_glasses", "curly_glasses"}:
+        if style == "curly_glasses":
+            for x, y in [(20, 8), (28, 5), (37, 4), (46, 7), (52, 14), (18, 17)]:
+                d.ellipse((x - 7, y - 5, x + 7, y + 9), fill=hair)
+        else:
+            d.rectangle((20, 8, 52, 17), fill="#b9bdc6")
         d.rectangle((23, 20, 34, 29), outline="#303746", width=2)
         d.rectangle((38, 20, 49, 29), outline="#303746", width=2)
         d.line((34, 24, 38, 24), fill="#303746", width=2)
@@ -72,9 +76,9 @@ def tone(path: Path, notes: list[tuple[float, float]], volume: float = 0.3) -> N
         wav.writeframes(b"".join(frames))
 
 
-def music(path: Path) -> None:
+def music(path: Path, bpm: int = 118, pitch: float = 1.0, energy: float = 1.0) -> None:
     """Create a compact disco loop: four-on-the-floor kick, offbeat hats, bass, and stabs."""
-    rate, bpm, bars = 44100, 118, 6
+    rate, bars = 44100, 6
     beat = 60 / bpm
     duration = bars * 4 * beat
     rng = random.Random(137)
@@ -89,15 +93,15 @@ def music(path: Path) -> None:
         eighth_index = int(t / (beat / 2))
         kick = math.sin(2 * math.pi * (62 - 24 * min(beat_pos / 0.12, 1)) * t) * math.exp(-beat_pos * 20)
         hat = (rng.random() * 2 - 1) * math.exp(-half_pos * 65) if eighth_index % 2 else 0
-        bass_freq = bass_notes[eighth_index % len(bass_notes)]
+        bass_freq = bass_notes[eighth_index % len(bass_notes)] * pitch
         bass_phase = 2 * math.pi * bass_freq * t
         bass = (math.sin(bass_phase) + 0.28 * math.sin(2 * bass_phase)) * 0.42
         stab_age = (t - beat / 2) % beat
         stab = 0.0
         if stab_age < 0.13:
-            chord = chord_notes[(beat_index // 4) % 2]
+            chord = tuple(note * pitch for note in chord_notes[(beat_index // 4) % 2])
             stab = sum(math.sin(2 * math.pi * note * t) for note in chord) / 3 * math.exp(-stab_age * 18)
-        sample = 0.48 * kick + 0.12 * hat + 0.27 * bass + 0.18 * stab
+        sample = 0.48 * kick + 0.12 * hat * energy + 0.27 * bass + 0.18 * stab * energy
         frames.append(struct.pack("<h", int(max(-1, min(1, sample)) * 32767 * 0.72)))
     with wave.open(str(path), "wb") as wav:
         wav.setnchannels(1)
@@ -144,6 +148,8 @@ def main() -> None:
     save_character("danny", "#56657c", "#90949c", "bald")
     save_character("rea_rae", "#d34b62", "#b9bdc6", "short_grey_glasses")
     save_character("jaxon", "#87ceeb", "#9a6842", "short")
+    save_character("jazzy", "#d97745", "#70452f", "curly_glasses")
+    save_character("riley_not_l", "#63b6a4", "#f0c96a", "long_blond")
 
     icon("rubber_band", lambda d: d.ellipse((5, 14, 35, 26), outline="#64d9ff", width=5))
     icon("enemy_rubber_band", lambda d: d.ellipse((5, 14, 35, 26), outline="#ff596f", width=5))
@@ -156,7 +162,9 @@ def main() -> None:
     tone(ASSETS / "sounds" / "collect.wav", [(620, 0.07), (880, 0.09)], 0.24)
     tone(ASSETS / "sounds" / "powerup.wav", [(440, 0.08), (660, 0.08), (990, 0.16)], 0.25)
     tone(ASSETS / "sounds" / "warning.wav", [(150, 0.18), (120, 0.18)], 0.3)
-    music(ASSETS / "music" / "shift_theme.wav")
+    music(ASSETS / "music" / "shift_theme.wav", bpm=118, pitch=1.0, energy=1.0)
+    music(ASSETS / "music" / "jazzy_rush.wav", bpm=154, pitch=1.25, energy=1.4)
+    music(ASSETS / "music" / "riley_slow.wav", bpm=82, pitch=0.72, energy=0.55)
 
     system_font = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
     if system_font.exists():

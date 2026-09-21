@@ -47,9 +47,9 @@ class Manager(pygame.sprite.Sprite):
         super().__init__()
         self.image = image
         self.kind = kind
-        self.hp = 3 if kind in {"rea_rae", "jaxon"} else 2
+        self.hp = 4 if kind in {"jazzy", "riley_not_l"} else 3 if kind in {"rea_rae", "jaxon"} else 2
         self.max_hp = self.hp
-        self.value = 120 if kind == "jaxon" else 100 if kind == "danny" else 80
+        self.value = 220 if kind in {"jazzy", "riley_not_l"} else 120 if kind == "jaxon" else 100 if kind == "danny" else 80
         from_left = random.choice((True, False))
         self.rect = image.get_rect(midleft=(-image.get_width(), y)) if from_left else image.get_rect(midright=(960 + image.get_width(), y))
         self.pos = pygame.Vector2(self.rect.center)

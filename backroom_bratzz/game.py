@@ -31,13 +31,15 @@ class Game:
         self.assets = AssetBank(ASSETS)
         self.assets.load()
         self.levels: list[Level] = load_levels(LEVELS)
-        self.music = MusicController(ASSETS / "music" / "shift_theme.wav", settings.music_volume)
+        self.music = MusicController(ASSETS / "music", settings.music_volume)
         self.music.start()
         self.font_small = self.assets.font(18)
+        self.font_tiny = self.assets.font(14)
         self.font_medium = self.assets.font(27)
         self.font_big = self.assets.font(52)
         self.running = True
-        self.scene = "title"
+        self.scene = "manager_intro"
+        self.special_mode = "normal"
         self.character = "Alex"
         self.score = 0
         self.level_index = 0
@@ -78,11 +80,15 @@ class Game:
         self.warning_count = 0
         self.pizzas = 0
         self.combo = 0
+        self.special_mode = "normal"
+        self.music.play("shift_theme")
         self.scene = "playing"
         self.flash("SHIFT START — survive the managers!", 2.0)
 
     def finish_run(self, reason: str) -> None:
         self.scene = "game_over"
+        self.special_mode = "normal"
+        self.music.play("shift_theme")
         self.message = reason
         self.save.record(self.score, self.level_index + 1, self.ninja_unlocked)
         self.save.save(self.save_path)
@@ -114,6 +120,8 @@ class Game:
                     self.settings.fullscreen = not self.settings.fullscreen
                     flags = pygame.FULLSCREEN if self.settings.fullscreen else 0
                     self.screen = pygame.display.set_mode((WIDTH, HEIGHT), flags)
+                elif self.scene == "manager_intro" and event.key in {pygame.K_RETURN, pygame.K_SPACE}:
+                    self.scene = "title"
                 elif self.scene in {"title", "game_over"}:
                     if event.key == pygame.K_1:
                         self.start_game("Alex")
@@ -123,8 +131,11 @@ class Game:
                         self.start_game("Ninja")
                 elif self.scene == "playing" and event.key == pygame.K_SPACE:
                     self.shoot()
-            elif event.type == pygame.MOUSEBUTTONDOWN and self.scene == "playing":
-                self.shoot()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if self.scene == "manager_intro":
+                    self.scene = "title"
+                elif self.scene == "playing":
+                    self.shoot()
 
     def shoot(self) -> None:
         player = self.player_group.sprite
@@ -144,20 +155,53 @@ class Game:
 
     def spawn_manager(self) -> None:
         roll = random.random()
-        kind = "danny" if roll < 0.58 else "rea_rae" if roll < 0.82 else "jaxon"
+        special_present = any(m.kind in {"jazzy", "riley_not_l"} for m in self.managers)
+        if not special_present and roll < 0.04:
+            kind = "jazzy"
+        elif not special_present and roll < 0.08:
+            kind = "riley_not_l"
+        else:
+            normal_roll = random.random()
+            kind = "danny" if normal_roll < 0.58 else "rea_rae" if normal_roll < 0.82 else "jaxon"
         image = self.assets.image(kind)
-        speed = self.level.manager_speed * (1.35 if kind == "jaxon" else 1.0)
+        speed = self.level.manager_speed * (1.35 if kind == "jaxon" else 0.9 if kind in {"jazzy", "riley_not_l"} else 1.0)
         self.managers.add(Manager(image, kind, speed, random.randint(105, 390)))
+
+    def active_special(self) -> str:
+        if any(manager.kind == "jazzy" for manager in self.managers):
+            return "jazzy"
+        if any(manager.kind == "riley_not_l" for manager in self.managers):
+            return "riley_not_l"
+        return "normal"
+
+    def update_special_mode(self) -> str:
+        mode = self.active_special()
+        if mode != self.special_mode:
+            self.special_mode = mode
+            track = "jazzy_rush" if mode == "jazzy" else "riley_slow" if mode == "riley_not_l" else "shift_theme"
+            self.music.play(track)
+            if mode == "jazzy":
+                self.flash("JAZZY PANIC!  EVERYBODY MOVE!", 1.8)
+            elif mode == "riley_not_l":
+                self.flash("RILEY-NOT-L: SLOOOOW SHIFT", 1.8)
+        return mode
 
     def update(self, dt: float) -> None:
         self.level_elapsed += dt
         self.spawn_clock += dt
+        mode = self.update_special_mode()
+        if mode == "jazzy":
+            player_dt, manager_dt, pickup_dt, shot_dt = dt * 1.25, dt * 1.75, dt * 1.5, dt * 1.15
+        elif mode == "riley_not_l":
+            player_dt = manager_dt = pickup_dt = shot_dt = dt * 0.55
+        else:
+            player_dt = manager_dt = pickup_dt = shot_dt = dt
         keys = pygame.key.get_pressed()
-        self.player_group.update(dt, keys)
-        self.projectiles.update(dt)
-        self.enemy_projectiles.update(dt)
-        self.managers.update(dt)
-        self.pickups.update(dt)
+        self.player_group.update(player_dt, keys)
+        self.projectiles.update(shot_dt)
+        self.enemy_projectiles.update(shot_dt)
+        self.managers.update(manager_dt)
+        self.pickups.update(pickup_dt)
 
         if keys[pygame.K_SPACE]:
             self.shoot()
@@ -242,13 +286,38 @@ class Game:
 
     def draw(self) -> None:
         self.screen.blit(self.assets.image("background"), (0, 0))
-        if self.scene == "title":
+        if self.scene == "manager_intro":
+            self.draw_manager_intro()
+        elif self.scene == "title":
             self.draw_title()
         elif self.scene == "playing":
             self.draw_playing()
         else:
             self.draw_game_over()
         pygame.display.flip()
+
+    def draw_manager_intro(self) -> None:
+        shade = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        shade.fill((3, 7, 18, 190))
+        self.screen.blit(shade, (0, 0))
+        self.text("MANAGER BRIEFING", self.font_big, COLORS["gold"], (480, 58), True)
+        cards = [
+            ("rea_rae", "REA-REA", "Defeat = warning", "Three warnings: FIRED"),
+            ("jaxon", "JAXON", "Defeat to unlock", "the secret Ninja"),
+            ("jazzy", "JAZZY", "Rare panic event", "Fast music + speed-up"),
+            ("riley_not_l", "RILEY-NOT-L", "Rare slow event", "Slow music + slow-mo"),
+        ]
+        for index, (sprite, name, line1, line2) in enumerate(cards):
+            x = 20 + index * 235
+            pygame.draw.rect(self.screen, COLORS["panel"], (x, 115, 215, 350), border_radius=18)
+            pygame.draw.rect(self.screen, COLORS["blue"], (x, 115, 215, 350), width=2, border_radius=18)
+            image = pygame.transform.scale(self.assets.image(sprite), (108, 132))
+            self.screen.blit(image, image.get_rect(center=(x + 108, 205)))
+            self.text(name, self.font_medium, COLORS["ink"], (x + 108, 300), True)
+            self.text(line1, self.font_tiny, COLORS["gold"], (x + 108, 350), True)
+            self.text(line2, self.font_tiny, COLORS["muted"], (x + 108, 382), True)
+        self.text("Jazzy and Riley-Not-L never appear together", self.font_small, COLORS["muted"], (480, 505), True)
+        self.text("Press ENTER, SPACE, or click to continue", self.font_medium, COLORS["green"], (480, 552), True)
 
     def draw_title(self) -> None:
         shade = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -274,6 +343,10 @@ class Game:
         self.text(f"Score {self.score}", self.font_medium, COLORS["ink"], (28, 24))
         self.text(f"{self.level.name}  {remaining}s", self.font_medium, COLORS["blue"], (360, 24))
         self.text(f"Warnings {self.warning_count}/3   Pizza {self.pizzas}/3", self.font_small, COLORS["gold"], (680, 29))
+        if self.special_mode == "jazzy":
+            self.text("JAZZY PANIC x1.75", self.font_small, COLORS["red"], (480, 78), True)
+        elif self.special_mode == "riley_not_l":
+            self.text("RILEY-NOT-L SLOW-MO x0.55", self.font_small, COLORS["blue"], (480, 78), True)
         if time.monotonic() < self.message_until:
             self.text(self.message, self.font_medium, COLORS["gold"], (480, 92), True)
 

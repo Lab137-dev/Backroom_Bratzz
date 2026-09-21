@@ -23,12 +23,15 @@ def main() -> int:
     except Exception as exc:
         errors.append(f"Asset load failed: {exc}")
 
-    required_images = {"alex", "riley_l", "ninja", "danny", "rea_rae", "jaxon", "rubber_band", "enemy_rubber_band", "ninja_star", "pizza", "star", "background", "logo"}
+    required_images = {"alex", "riley_l", "ninja", "danny", "rea_rae", "jaxon", "jazzy", "riley_not_l", "rubber_band", "enemy_rubber_band", "ninja_star", "pizza", "star", "background", "logo"}
     missing = required_images.difference(bank.images)
     if missing:
         errors.append(f"Missing images: {', '.join(sorted(missing))}")
     if not bank.font_path.exists():
         errors.append("Bundled font is missing")
+    for track in ("shift_theme.wav", "jazzy_rush.wav", "riley_slow.wav"):
+        if not (ASSETS / "music" / track).exists():
+            errors.append(f"Missing music track: {track}")
     try:
         levels = load_levels(LEVELS)
         if len(levels) < 3:
