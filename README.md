@@ -154,3 +154,11 @@ Game design, code, original sprites, sound effects, and three-state disco soundt
 See [assets/credits.md](assets/credits.md) for third-party asset attribution. Code and original LAB-137 assets are released under the [MIT License](LICENSE). The bundled DejaVu font retains its own license.
 
 The original single-file browser edition remains available in this repository's `main` branch history.
+
+## Standalone browser sequel
+
+Download `Backroom_Bratzz_2_Boss_Shift.html` and open it in a browser. This adaptation embeds the sequel sprites and background and reuses all three level definitions. It includes Ninja unlocks, manager warnings, Danny return fire, pizza powers and mutually exclusive Jazzy / Riley-Not-L events. Music and effects are synthesized in-browser, rather than the Python edition's WAV tracks.
+
+Keyboard: A/D or arrows to move, hold Space to fire, P to pause. Touch: movement buttons and FIRE, or drag on the floor to move and auto-fire. Audio is optional. Browser-local storage saves Ninja unlock and best score.
+
+Run `node tests/browser_sequel.cjs` for gameplay checks. Real browser visual, audio and touch verification is outstanding.
